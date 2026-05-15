@@ -943,8 +943,10 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   .nav-toggle { display: flex; }
 
   #hero, .sw { padding-left:28px; padding-right:28px; }
-  .hero-upper { padding-left:0; padding-top: 120px; }
-  .hero-lower { padding-left:0; flex-direction:column; align-items:flex-start; gap:32px; padding-bottom: 60px; }
+  /* Remove space-between on mobile so name + bio sit close together */
+  #hero { justify-content: flex-start; gap: 0; }
+  .hero-upper { padding-left:0; padding-top: 110px; }
+  .hero-lower { padding-left:0; flex-direction:column; align-items:flex-start; gap:24px; padding-bottom: 60px; padding-top: 28px; }
   .hero-meta { text-align: left; }
   .hero-scroll { right: 28px; bottom: 40px; }
   .about-grid { grid-template-columns:1fr; gap:48px; }
@@ -969,8 +971,10 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   #cur, #cur-dot, #cur-ring { display:none; }
   body { cursor:auto; }
   a,button { cursor:pointer; }
-  /* Prevent horizontal bleed from decorative elements */
-  .h-arc, .h-arc-2, .h-dotfield, .h-cross { display: none; }
+  /* Scale circles down to fit — hero overflow:hidden keeps them clipped */
+  .h-arc { width: 260px; height: 260px; top: 8%; right: -60px; }
+  .h-arc-2 { width: 150px; height: 150px; top: 14%; right: -10px; }
+  .h-dotfield { right: 28px; bottom: 10%; }
   .project::before { left: 0; right: 0; }
   .connect-item { min-width: 0; }
   .connect-item > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -982,11 +986,19 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   .hero-name .hn-row .ni { font-size: clamp(52px, 15vw, 76px); }
   .about-h, .proj-hrow-h, .feat-h, .ct-h { font-size: 38px; }
   .stat-grid { grid-template-columns: 1fr; }
-  .edu-td-yr { width: 80px; font-size: 9px; }
-  .edu-td-deg { font-size: 16px; padding-right: 10px; }
   .nav-logo { font-size: 18px; }
   .ct-cta { padding: 16px 28px; }
   .hero-bio { font-size: 15px; }
+  /* Education: flatten table to stacked blocks */
+  .edu-table-container { overflow-x: visible; }
+  .edu-table { min-width: 0; }
+  .edu-table, .edu-table tbody, .edu-table tr { display: block; width: 100%; }
+  .edu-table tr { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 24px 0; }
+  .edu-table tr + tr { border-top: none; }
+  .edu-td { display: block; padding: 0; width: 100% !important; }
+  .edu-td-yr { padding-bottom: 8px; }
+  .edu-td-deg { padding-right: 0; font-size: 16px; }
+  .edu-td-badge { text-align: left; padding-top: 12px; }
 }
 </style>
 </head>
