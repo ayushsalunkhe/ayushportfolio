@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ayush Salunkhe &mdash; Software Engineer &amp; Builder</title>
+<meta name="description" content="Ayush Salunkhe — final-year Computer Engineering student and software engineer building AI-integrated products and production-grade full-stack, mobile, and real-time applications.">
+<meta name="author" content="Ayush Harish Salunkhe">
+<meta name="theme-color" content="#F7F3ED">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ayush Salunkhe — Software Engineer & Builder">
+<meta property="og:description" content="Software engineer building AI-integrated products and production-grade applications.">
+<meta property="og:url" content="https://ayush-salunkhe-portfolio.vercel.app">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F7F3ED'/%3E%3Ctext x='50%25' y='54%25' font-family='Georgia,serif' font-size='34' font-style='italic' fill='%239B7940' text-anchor='middle' dominant-baseline='central'%3EA%3C/text%3E%3C/svg%3E">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="index, follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,300;0,9..144,400;1,9..144,200;1,9..144,300;1,9..144,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -133,7 +144,7 @@ button { border: none; background: none; cursor: none; font: inherit; }
 @keyframes lFill { to { width: 100%; } }
 
 /* ═══ CURSOR ════════════════════════════════════════════════════ */
-#cur { position: fixed; top:0; left:0; pointer-events:none; z-index:9997; transform:translate(-50%,-50%); }
+#cur { position: fixed; top:0; left:0; pointer-events:none; z-index:9997; will-change: transform; }
 #cur-dot {
   width: 7px; height: 7px;
   background: var(--gold);
@@ -1069,9 +1080,65 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   .edu-td-deg { padding-right: 0; font-size: 16px; }
   .edu-td-badge { text-align: left; padding-top: 12px; }
 }
+
+/* ═══ ACCESSIBILITY ═══════════════════════════════════════════════
+   Keyboard focus + reduced-motion. Applied per the design skill's
+   CRITICAL a11y rules — the visual identity is untouched.
+═══════════════════════════════════════════════════════════════ */
+
+/* Hide the native pointer everywhere the custom cursor is active.
+   The browser's UA stylesheet forces cursor:pointer on <a>/buttons,
+   which is why the system pointer was bleeding through. Scoped to
+   real mouse + desktop widths so touch and small screens keep theirs. */
+@media (hover: hover) and (pointer: fine) and (min-width: 961px) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
+/* Visible focus ring for keyboard users (the custom cursor hides the
+   pointer, so keyboard nav had no affordance before). */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Skip link */
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 10000;
+  background: var(--ink); color: var(--cream);
+  font-family: var(--sans); font-size: 12px; letter-spacing: .08em;
+  padding: 12px 20px;
+}
+.skip-link:focus { left: 12px; top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Show everything immediately — no reveal offset, no loader wait */
+  .rv, .stag, .hero-eyebrow, .hero-lower,
+  .hn-row .ni, .about-pull::before, .stag-bar {
+    opacity: 1 !important;
+    transform: none !important;
+    width: auto;
+  }
+  #loader { display: none !important; }
+  .marquee-track { animation: none !important; }
+  /* Restore the native cursor when motion is reduced (overrides the
+     cursor:none rule above — same specificity, later in source wins) */
+  *, *::before, *::after { cursor: auto !important; }
+  #cur { display: none !important; }
+}
 </style>
 </head>
 <body>
+
+<a href="#about" class="skip-link">Skip to content</a>
 
 <!-- Grain overlay -->
 <div id="grain" aria-hidden="true"></div>
@@ -1159,8 +1226,8 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   <div class="hero-lower">
     <p class="hero-bio">
       Final-year engineering student building production-grade full&#8209;stack apps,
-      AI-integrated systems, and real&#8209;time collaborative tools &mdash; with 4
-      deployed projects across web, mobile, and cloud.
+      AI-integrated systems, and real&#8209;time collaborative tools &mdash; with 5
+      shipped projects across web, mobile, cloud, and offline AI.
     </p>
     <div class="hero-meta">
       <div class="avail-badge">
@@ -1187,7 +1254,9 @@ body.loaded .hero-lower { opacity:1; transform:none; }
       <span>AWS</span><span class="mdot"></span><span>Node.js</span><span class="mdot"></span>
       <span>Cloudflare</span><span class="mdot"></span><span>GitHub Actions</span><span class="mdot"></span>
       <span>Python</span><span class="mdot"></span><span>Java</span><span class="mdot"></span>
-      <span>Gemini AI</span><span class="mdot"></span><span>Vercel</span>
+      <span>Gemini AI</span><span class="mdot"></span><span>Spring Boot</span><span class="mdot"></span>
+      <span>PostgreSQL</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
+      <span>pgvector</span><span class="mdot"></span><span>Vercel</span>
     </div>
     <div class="mitem">
       <span>React</span><span class="mdot"></span><span>TypeScript</span><span class="mdot"></span>
@@ -1196,7 +1265,9 @@ body.loaded .hero-lower { opacity:1; transform:none; }
       <span>AWS</span><span class="mdot"></span><span>Node.js</span><span class="mdot"></span>
       <span>Cloudflare</span><span class="mdot"></span><span>GitHub Actions</span><span class="mdot"></span>
       <span>Python</span><span class="mdot"></span><span>Java</span><span class="mdot"></span>
-      <span>Gemini AI</span><span class="mdot"></span><span>Vercel</span>
+      <span>Gemini AI</span><span class="mdot"></span><span>Spring Boot</span><span class="mdot"></span>
+      <span>PostgreSQL</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
+      <span>pgvector</span><span class="mdot"></span><span>Vercel</span>
     </div>
   </div>
 </div>
@@ -1226,8 +1297,8 @@ body.loaded .hero-lower { opacity:1; transform:none; }
       </p>
       <div class="stat-grid rv d2">
         <div class="stat-c">
-          <div class="stat-n" data-count="4">0</div>
-          <div class="stat-l">Projects Deployed</div>
+          <div class="stat-n" data-count="5">0</div>
+          <div class="stat-l">Projects Shipped</div>
         </div>
         <div class="stat-c">
           <div class="stat-n" data-count="7">0</div>
@@ -1267,30 +1338,31 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   <p class="feat-stag rv"><span></span>Featured Project</p>
   <div class="feat-inner">
     <div>
-      <h2 id="feat-h" class="feat-h rv">Driver<i>Guard</i></h2>
+      <h2 id="feat-h" class="feat-h rv">Memoria<i>&nbsp;AI</i></h2>
       <p class="feat-desc rv d1">
-        A cross-platform mobile safety app using Flutter and MediaPipe Face Mesh that
-        detects driver drowsiness in real time via the Eye Aspect Ratio algorithm.
-        Triggers audio/visual alerts, logs sessions offline, and sends live GPS
-        location with nearest hospitals to emergency contacts when drowsiness exceeds
-        a threshold.
+        An offline, AI-powered personal knowledge OS for Windows. Scan local folders,
+        then search your documents by <em>meaning</em> &mdash; not filename &mdash; through
+        natural language. A Spring&nbsp;Boot + Java&nbsp;21 pipeline (scan &rarr; extract &rarr;
+        embed &rarr; vector search) over PostgreSQL/pgvector with local Ollama embeddings,
+        so it runs completely offline &mdash; no cloud, no telemetry.
       </p>
       <div class="feat-tags rv d2">
-        <span class="feat-tag">Flutter</span>
-        <span class="feat-tag">MediaPipe</span>
-        <span class="feat-tag">Python</span>
-        <span class="feat-tag">Dart</span>
-        <span class="feat-tag">SQLite</span>
-        <span class="feat-tag">Computer Vision</span>
+        <span class="feat-tag">Spring Boot</span>
+        <span class="feat-tag">Java 21</span>
+        <span class="feat-tag">PostgreSQL</span>
+        <span class="feat-tag">pgvector</span>
+        <span class="feat-tag">Ollama</span>
+        <span class="feat-tag">React</span>
+        <span class="feat-tag">Semantic Search</span>
       </div>
-      <a href="https://github.com/ayushsalunkhe" target="_blank" rel="noopener" class="feat-link rv d3">
+      <a href="https://github.com/ayushsalunkhe/Memoria-Ai" target="_blank" rel="noopener" class="feat-link rv d3">
         <span>View on GitHub</span><span class="ci-arr"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
       </a>
     </div>
     <div class="feat-visual rv d2" aria-hidden="true">
-      <div class="fv-card fv-c1">EAR &mdash; 0.21 &bull; Drowsy</div>
-      <div class="fv-card fv-c2">GPS &bull; Live Location</div>
-      <div class="fv-card fv-c3">Alert &bull; Active</div>
+      <div class="fv-card fv-c1">query &mdash; &ldquo;my rent agreement&rdquo;</div>
+      <div class="fv-card fv-c2">12,480 chunks embedded</div>
+      <div class="fv-card fv-c3">cosine 0.92 &bull; match</div>
       <div class="fv-line"></div>
       <div class="fv-circle"></div>
     </div>
@@ -1307,9 +1379,37 @@ body.loaded .hero-lower { opacity:1; transform:none; }
     <p class="proj-count rv">004 Works</p>
   </div>
 
-  <!-- CollabEdit -->
+  <!-- DriverGuard -->
   <div class="project rv js-project" data-cursor="View">
     <div class="proj-n" aria-hidden="true">01</div>
+    <div class="proj-body">
+      <p class="proj-cat">Mobile Safety &bull; Computer Vision</p>
+      <h3 class="proj-title">Driver<i>Guard</i></h3>
+      <p class="proj-desc">
+        Cross-platform mobile safety app using Flutter and MediaPipe Face Mesh to detect
+        driver drowsiness in real time via the Eye Aspect Ratio algorithm. Triggers
+        audio/visual alerts, logs sessions offline in SQLite, and dispatches live GPS
+        location to emergency contacts past a configurable threshold.
+      </p>
+      <div class="proj-meta">
+        <a href="https://github.com/ayushsalunkhe" target="_blank" rel="noopener" class="proj-live">
+          github.com/ayushsalunkhe
+        </a>
+      </div>
+      <div class="proj-tags">
+        <span class="proj-tag">Flutter</span>
+        <span class="proj-tag">MediaPipe</span>
+        <span class="proj-tag">Python</span>
+        <span class="proj-tag">Dart</span>
+        <span class="proj-tag">SQLite</span>
+      </div>
+    </div>
+    <div class="proj-arr" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+  </div>
+
+  <!-- CollabEdit -->
+  <div class="project rv d1 js-project" data-cursor="View">
+    <div class="proj-n" aria-hidden="true">02</div>
     <div class="proj-body">
       <p class="proj-cat">Developer Tools &bull; Real-time</p>
       <h3 class="proj-title"><i>Collab</i>Edit</h3>
@@ -1336,8 +1436,8 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 
   <!-- MedGemma -->
-  <div class="project rv d1 js-project">
-    <div class="proj-n" aria-hidden="true">02</div>
+  <div class="project rv d2 js-project" data-cursor="View">
+    <div class="proj-n" aria-hidden="true">03</div>
     <div class="proj-body">
       <p class="proj-cat">AI &bull; Healthcare</p>
       <h3 class="proj-title">MedGemma Pill<br><i>Identification</i></h3>
@@ -1356,6 +1456,32 @@ body.loaded .hero-lower { opacity:1; transform:none; }
         <span class="proj-tag">TypeScript</span>
         <span class="proj-tag">Vite</span>
         <span class="proj-tag">MedGemma API</span>
+      </div>
+    </div>
+    <div class="proj-arr" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+  </div>
+
+  <!-- Instagram Reel View Counter -->
+  <div class="project rv d3 js-project" data-cursor="View">
+    <div class="proj-n" aria-hidden="true">04</div>
+    <div class="proj-body">
+      <p class="proj-cat">Automation &bull; Analytics</p>
+      <h3 class="proj-title">Reel View<br><i>Counter</i></h3>
+      <p class="proj-desc">
+        Zero-maintenance Instagram analytics automation. A Node.js + Apify pipeline runs
+        on a scheduled GitHub Actions cron (9:00&nbsp;AM IST), tracking views, likes, and
+        daily growth deltas to Google Sheets with exponential-backoff retry logic.
+      </p>
+      <div class="proj-meta">
+        <a href="https://github.com/ayushsalunkhe" target="_blank" rel="noopener" class="proj-live">
+          github.com/ayushsalunkhe
+        </a>
+      </div>
+      <div class="proj-tags">
+        <span class="proj-tag">Node.js</span>
+        <span class="proj-tag">GitHub Actions</span>
+        <span class="proj-tag">Google Sheets API</span>
+        <span class="proj-tag">Apify</span>
       </div>
     </div>
     <div class="proj-arr" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
@@ -1395,7 +1521,9 @@ body.loaded .hero-lower { opacity:1; transform:none; }
           <div class="sk"><span>Next.js</span></div>
           <div class="sk"><span>Flutter</span></div>
           <div class="sk"><span>Node.js</span></div>
+          <div class="sk"><span>Spring Boot</span></div>
           <div class="sk"><span>Vite</span></div>
+          <div class="sk"><span>Tailwind</span></div>
           <div class="sk"><span>HTML</span></div>
           <div class="sk"><span>CSS</span></div>
         </div>
@@ -1416,8 +1544,11 @@ body.loaded .hero-lower { opacity:1; transform:none; }
       <div class="skill-group rv d3">
         <div class="sg-label"><span></span>Databases &amp; APIs</div>
         <div class="skill-pills">
+          <div class="sk"><span>PostgreSQL</span></div>
+          <div class="sk"><span>pgvector</span></div>
           <div class="sk"><span>SQLite</span></div>
           <div class="sk"><span>MySQL</span></div>
+          <div class="sk"><span>Ollama</span></div>
           <div class="sk"><span>REST APIs</span></div>
           <div class="sk"><span>Google Sheets API</span></div>
           <div class="sk"><span>Judge0 API</span></div>
@@ -1434,6 +1565,8 @@ body.loaded .hero-lower { opacity:1; transform:none; }
           <div class="sk"><span>Real-time Systems</span></div>
           <div class="sk"><span>Computer Vision</span></div>
           <div class="sk"><span>AI/ML Integration</span></div>
+          <div class="sk"><span>Semantic Search</span></div>
+          <div class="sk"><span>RAG &amp; Embeddings</span></div>
         </div>
       </div>
     </div>
@@ -1538,15 +1671,33 @@ mmLinks.forEach(link => {
 
 /* ── CURSOR ─────────────────────────────────────────────────── */
 const cur = document.getElementById('cur');
-let mx=0, my=0, rx=0, ry=0;
-document.addEventListener('mousemove', e=>{
-  mx=e.clientX; my=e.clientY;
-});
-(function loop(){
-  rx+=(mx-rx)*.13; ry+=(my-ry)*.13;
-  cur.style.left=rx+'px'; cur.style.top=ry+'px';
-  requestAnimationFrame(loop);
-})();
+const curDot = document.getElementById('cur-dot');
+const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+const cursorReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (cur && curDot && finePointer && !cursorReduce) {
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;          // ring position (eased)
+  let dirty = false;
+
+  window.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY; dirty = true;
+  }, { passive: true });
+
+  /* Dot snaps to the pointer instantly; ring trails with easing.
+     transform/translate3d only — no layout thrash per frame. */
+  (function loop(){
+    rx += (mx - rx) * 0.2;
+    ry += (my - ry) * 0.2;
+    cur.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+    curDot.style.transform =
+      `translate3d(${mx - rx}px, ${my - ry}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(loop);
+  })();
+} else if (cur) {
+  cur.style.display = 'none';   // touch devices / reduced-motion: no custom cursor
+}
+
 document.querySelectorAll('.js-project').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('c-project'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('c-project'));
@@ -1557,15 +1708,19 @@ document.querySelectorAll('a, button, .ct-cta, .feat-link, .nav-cta').forEach(el
 });
 
 /* ── LOADER ─────────────────────────────────────────────────── */
-window.addEventListener('load',()=>{
-  setTimeout(()=>{
-    document.getElementById('loader').classList.add('out');
-    setTimeout(()=>{
-      document.getElementById('loader').style.display='none';
+(function initLoader(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finish = () => {
+    const loader = document.getElementById('loader');
+    if (loader) loader.classList.add('out');
+    setTimeout(() => {
+      if (loader) loader.style.display = 'none';
       document.body.classList.add('loaded');
-    }, 1000);
-  }, 2000);
-});
+    }, reduce ? 0 : 550);
+  };
+  if (reduce) { document.body.classList.add('loaded'); finish(); return; }
+  window.addEventListener('load', () => setTimeout(finish, 900));
+})();
 
 /* ── SCROLL PROGRESS ────────────────────────────────────────── */
 window.addEventListener('scroll',()=>{
