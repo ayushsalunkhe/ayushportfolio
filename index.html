@@ -218,7 +218,8 @@ nav.scrolled {
   padding: 10px 24px;
   border: 1px solid var(--gold-border);
   color: var(--gold);
-  transition: background .35s, color .35s;
+  transition: background .35s, color .35s, transform .5s var(--ease);
+  will-change: transform;
   cursor: none;
   flex-shrink: 0;
   white-space: nowrap;
@@ -446,6 +447,7 @@ body.loaded .hero-divider { width: 100%; }
   color: var(--ink);
   transform: translateY(110%);
   transition: transform 1s var(--ease);
+  will-change: transform;
 }
 .hn-row:nth-child(1) .ni { transition-delay: .42s; }
 .hn-row:nth-child(2) .ni {
@@ -457,6 +459,25 @@ body.loaded .hero-divider { width: 100%; }
 }
 .hn-row:nth-child(3) .ni { transition-delay: .78s; }
 body.loaded .hn-row .ni { transform: none; }
+
+/* Per-letter cascade — JS splits each .ni into .ch spans.
+   The row still slides up as one block; letters then settle
+   individually with a tiny stagger for a typographic ripple. */
+.ni .ch {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.35em) rotate(2deg);
+  transition: opacity .6s var(--ease), transform .8s var(--ease);
+  transition-delay: inherit;
+}
+body.loaded .ni .ch { opacity: 1; transform: none; }
+
+/* Once the intro animation has fully settled, release the overflow
+   mask and the slide transition so scroll parallax can move the rows
+   freely (added ~2.2s after load via JS). */
+body.hero-done .hero-name,
+body.hero-done .hn-row { overflow: visible; }
+body.hero-done .hn-row .ni { transition: none; }
 
 .hero-lower {
   display: flex; justify-content: flex-start; align-items: flex-end;
@@ -517,15 +538,20 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 
 /* ═══ MARQUEE ════════════════════════════════════════════════════ */
 .marquee {
-  overflow: hidden;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--cream-2);
   padding: 15px 0;
 }
+/* Fade masks — items dissolve at the edges instead of hard-clipping */
+.marquee-mask {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
 .marquee-track {
   display: flex; width: max-content;
-  animation: marq 32s linear infinite;
+  animation: marq 48s linear infinite;
 }
 .marquee-track:hover { animation-play-state: paused; }
 .mitem {
@@ -561,6 +587,31 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .rv.vis { opacity:1; transform:none; }
 .d1{transition-delay:.1s} .d2{transition-delay:.22s} .d3{transition-delay:.36s}
 .d4{transition-delay:.52s} .d5{transition-delay:.70s}
+
+/* Mask reveal for big headings — each line wipes up from behind a
+   clip edge instead of the whole block fading. JS wraps heading
+   lines (split on <br>) in .mask-line > .mask-inner. */
+.mask-line { display: block; overflow: hidden; }
+.mask-inner {
+  display: block;
+  transform: translateY(105%);
+  transition: transform .9s var(--ease);
+}
+.rv.vis .mask-line:nth-child(1) .mask-inner { transition-delay: 0s; }
+.rv.vis .mask-line:nth-child(2) .mask-inner { transition-delay: .09s; }
+.rv.vis .mask-line:nth-child(3) .mask-inner { transition-delay: .18s; }
+.rv.vis .mask-inner { transform: none; }
+/* Headings that get the mask treatment drop the fade-up offset —
+   the wipe is the reveal. */
+.rv.has-mask { transform: none; opacity: 1; }
+
+/* Magnetic elements — JS translates these toward the cursor.
+   Transition handles the spring-back on mouseleave. */
+.magnetic {
+  transition: transform .55s var(--ease);
+  will-change: transform;
+}
+.magnetic > * { pointer-events: none; }
 
 /* ═══ ABOUT ══════════════════════════════════════════════════════ */
 #about { background: var(--white); }
@@ -807,6 +858,53 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   border-color:var(--gold); color:var(--gold); background:var(--gold-faint);
 }
 
+/* ── Floating preview tile — trails the cursor over project rows ── */
+#proj-preview {
+  position: fixed; top: 0; left: 0;
+  width: 300px; height: 200px;
+  pointer-events: none; z-index: 900;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.85) rotate(-2deg);
+  transition: opacity .35s var(--ease), transform .45s var(--ease);
+  will-change: transform;
+  overflow: hidden;
+  box-shadow: 0 24px 64px -16px rgba(26,21,15,.28);
+}
+#proj-preview.on {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
+}
+.pp-tile {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 24px;
+  opacity: 0; transition: opacity .3s ease;
+}
+.pp-tile.on { opacity: 1; }
+.pp-cat {
+  font-family: var(--mono); font-size: 8px;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(255,255,255,.55);
+}
+.pp-name {
+  font-family: var(--serif); font-size: 30px; font-weight: 200;
+  letter-spacing: -.02em; color: rgba(255,255,255,.94);
+  line-height: 1.05;
+}
+.pp-name i { font-style: italic; color: var(--gold-light); }
+.pp-tile::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+/* Abstract gradient per project — no screenshots needed */
+.pp-t1 { background: linear-gradient(135deg, #2E2519 0%, #6B4F2A 55%, #9B7940 100%); }
+.pp-t2 { background: linear-gradient(135deg, #100D08 0%, #1F3A33 60%, #3E6B5C 100%); }
+.pp-t3 { background: linear-gradient(135deg, #1A150F 0%, #4A3A5E 60%, #7A5C8F 100%); }
+.pp-t4 { background: linear-gradient(135deg, #241C11 0%, #7A5230 55%, #BE9B5F 100%); }
+@media (max-width: 960px) { #proj-preview { display: none; } }
+
 /* ═══ SKILLS ══════════════════════════════════════════════════════ */
 #skills { background: var(--white); }
 .skills-layout {
@@ -831,14 +929,33 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   border:1px solid var(--border);
   color:var(--stone); background:var(--cream);
   position:relative; overflow:hidden; cursor:default;
-  transition: color .35s, border-color .35s;
+  opacity:0; transform:translateY(12px);
+  transition: color .35s, border-color .35s,
+              transform .55s var(--ease), opacity .55s var(--ease),
+              box-shadow .35s;
 }
+.sk.in { opacity:1; transform:none; }
 .sk::before {
   content:''; position:absolute; inset:0;
   background:var(--gold-faint); transform:translateX(-100%);
   transition:transform .45s var(--ease);
 }
+/* Cursor spotlight — a gold glow inside each pill tracks the exact
+   cursor position (--gx/--gy set by JS), so moving across the grid
+   washes light over nearby pills, not just the hovered one. */
+.sk::after {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(110px circle at var(--gx,-200px) var(--gy,-200px),
+              rgba(155,121,64,.20), transparent 65%);
+  opacity:0; transition: opacity .4s ease;
+  pointer-events:none;
+}
+.skills-right.glow .sk::after { opacity:1; }
 .sk:hover { color:var(--gold); border-color:var(--gold-border); }
+.sk.in:hover {
+  transform:translateY(-3px);
+  box-shadow: 0 8px 20px -10px rgba(155,121,64,.35);
+}
 .sk:hover::before { transform:none; }
 .sk span { position:relative; z-index:1; }
 
@@ -964,6 +1081,16 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   color:var(--cream); position:relative; z-index:1; margin-bottom:72px;
 }
 .ct-h i { font-style:italic; color:var(--gold-2); }
+/* Words flip italic-gold on hover, one at a time */
+.ct-h .w {
+  display: inline-block;
+  transition: color .35s ease, transform .45s var(--ease);
+  cursor: none;
+}
+.ct-h .w:hover {
+  font-style: italic; color: var(--gold-2);
+  transform: translateY(-4px) rotate(-1.5deg);
+}
 .ct-bottom {
   display:flex; justify-content:space-between; align-items:flex-end;
   border-top:1px solid rgba(255,255,255,.07); padding-top:52px;
@@ -1002,6 +1129,16 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .footer-copy {
   font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
   color:rgba(247,243,237,.22);
+}
+.footer-time {
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(247,243,237,.35);
+  display:inline-flex; align-items:center; gap:10px;
+}
+.footer-time::before {
+  content:''; width:5px; height:5px; border-radius:50%;
+  background:var(--gold-2); opacity:.7;
+  animation: statusPulse 2.5s ease infinite;
 }
 .footer-links { display:flex; gap:32px; }
 .footer-links a {
@@ -1122,11 +1259,13 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   }
   /* Show everything immediately — no reveal offset, no loader wait */
   .rv, .stag, .hero-eyebrow, .hero-lower,
-  .hn-row .ni, .about-pull::before, .stag-bar {
+  .hn-row .ni, .about-pull::before, .stag-bar,
+  .ni .ch, .mask-inner, .fv-card, .sk {
     opacity: 1 !important;
     transform: none !important;
     width: auto;
   }
+  #proj-preview { display: none !important; }
   #loader { display: none !important; }
   .marquee-track { animation: none !important; }
   /* Restore the native cursor when motion is reduced (overrides the
@@ -1246,6 +1385,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 
 <!-- Marquee -->
 <div class="marquee" aria-hidden="true">
+  <div class="marquee-mask">
   <div class="marquee-track">
     <div class="mitem">
       <span>React</span><span class="mdot"></span><span>TypeScript</span><span class="mdot"></span>
@@ -1269,6 +1409,27 @@ body.loaded .hero-lower { opacity:1; transform:none; }
       <span>PostgreSQL</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
       <span>pgvector</span><span class="mdot"></span><span>Vercel</span>
     </div>
+  </div>
+  </div>
+</div>
+
+<!-- Floating project preview (follows cursor over project rows) -->
+<div id="proj-preview" aria-hidden="true">
+  <div class="pp-tile pp-t1" data-pp="1">
+    <span class="pp-cat">Mobile Safety &bull; Computer Vision</span>
+    <span class="pp-name">Driver<i>Guard</i></span>
+  </div>
+  <div class="pp-tile pp-t2" data-pp="2">
+    <span class="pp-cat">Developer Tools &bull; Real-time</span>
+    <span class="pp-name"><i>Collab</i>Edit</span>
+  </div>
+  <div class="pp-tile pp-t3" data-pp="3">
+    <span class="pp-cat">AI &bull; Healthcare</span>
+    <span class="pp-name">Med<i>Gemma</i></span>
+  </div>
+  <div class="pp-tile pp-t4" data-pp="4">
+    <span class="pp-cat">Automation &bull; Analytics</span>
+    <span class="pp-name">Reel <i>Counter</i></span>
   </div>
 </div>
 
@@ -1380,7 +1541,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 
   <!-- DriverGuard -->
-  <div class="project rv js-project" data-cursor="View">
+  <div class="project rv js-project" data-cursor="View" data-project="1">
     <div class="proj-n" aria-hidden="true">01</div>
     <div class="proj-body">
       <p class="proj-cat">Mobile Safety &bull; Computer Vision</p>
@@ -1408,7 +1569,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 
   <!-- CollabEdit -->
-  <div class="project rv d1 js-project" data-cursor="View">
+  <div class="project rv d1 js-project" data-cursor="View" data-project="2">
     <div class="proj-n" aria-hidden="true">02</div>
     <div class="proj-body">
       <p class="proj-cat">Developer Tools &bull; Real-time</p>
@@ -1436,7 +1597,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 
   <!-- MedGemma -->
-  <div class="project rv d2 js-project" data-cursor="View">
+  <div class="project rv d2 js-project" data-cursor="View" data-project="3">
     <div class="proj-n" aria-hidden="true">03</div>
     <div class="proj-body">
       <p class="proj-cat">AI &bull; Healthcare</p>
@@ -1462,7 +1623,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 
   <!-- Instagram Reel View Counter -->
-  <div class="project rv d3 js-project" data-cursor="View">
+  <div class="project rv d3 js-project" data-cursor="View" data-project="4">
     <div class="proj-n" aria-hidden="true">04</div>
     <div class="proj-body">
       <p class="proj-cat">Automation &bull; Analytics</p>
@@ -1615,7 +1776,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   <div class="ct-amb" aria-hidden="true"></div>
   <p class="ct-stag rv">05 &mdash; Let&rsquo;s Connect</p>
   <h2 id="contact-h" class="ct-h rv d1">
-    Got a<br>project<br>in <i>mind?</i>
+    <span class="w">Got</span> <span class="w">a</span><br><span class="w">project</span><br><span class="w">in</span> <span class="w"><i>mind?</i></span>
   </h2>
   <div class="ct-bottom rv d2">
     <a href="mailto:ayush.salunkhe7371@gmail.com" class="ct-email">
@@ -1627,6 +1788,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
   <div class="footer-bottom rv d3">
     <p class="footer-copy">&copy;&nbsp;2026 Ayush Harish Salunkhe</p>
+    <p class="footer-time">Karjat, IN &mdash; <span id="local-time">--:--</span> IST</p>
     <nav class="footer-links" aria-label="Footer links">
       <a href="https://github.com/ayushsalunkhe" target="_blank">GitHub</a>
       <a href="https://linkedin.com/in/ayushsalunkhe" target="_blank">LinkedIn</a>
@@ -1783,6 +1945,265 @@ window.addEventListener('scroll',()=>{
   if(arc1 && window.innerWidth > 960) arc1.style.transform=`translateY(${y*.1}px)`;
   if(arc2 && window.innerWidth > 960) arc2.style.transform=`translateY(${y*.06}px)`;
 },{passive:true});
+
+/* ═══════════════════════════════════════════════════════════════
+   AESTHETIC UPGRADES — magnetic hover, letter cascade, hero
+   parallax, project preview, heading mask-reveals, featured
+   mouse-parallax, word hover, local time, lerp smooth scroll.
+   All motion is gated behind fine-pointer + no reduced-motion.
+═══════════════════════════════════════════════════════════════ */
+const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FINE   = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+/* ── 1 · MAGNETIC HOVER ─────────────────────────────────────── */
+if (FINE && !REDUCE) {
+  document.querySelectorAll('.nav-cta, .ct-cta, .feat-link, .proj-arr, .nav-toggle')
+    .forEach(el => {
+      el.classList.add('magnetic');
+      const strength = el.classList.contains('proj-arr') ? 0.5 : 0.35;
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        el.style.transform = `translate(${dx * strength}px, ${dy * strength}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+}
+
+/* ── 2 & 3 · HERO LETTER CASCADE + SCROLL PARALLAX ──────────── */
+(function heroName(){
+  const rows = document.querySelectorAll('.hn-row .ni');
+  if (!rows.length) return;
+
+  if (!REDUCE) {
+    /* Split each row into letters; each letter settles with a stagger
+       layered on top of the row's slide-up delay. */
+    const rowDelays = [0.42, 0.60, 0.78];
+    rows.forEach((ni, r) => {
+      const text = ni.textContent;
+      ni.textContent = '';
+      ni.setAttribute('aria-label', text);
+      [...text].forEach((c, i) => {
+        const s = document.createElement('span');
+        s.className = 'ch';
+        s.setAttribute('aria-hidden', 'true');
+        s.textContent = c === ' ' ? ' ' : c;
+        s.style.transitionDelay = (rowDelays[r] + 0.15 + i * 0.028) + 's';
+        ni.appendChild(s);
+      });
+    });
+  }
+
+  /* Release the overflow mask + slide transition once the intro has
+     settled, so parallax can move rows without clipping or lag. */
+  const arm = () => setTimeout(() => document.body.classList.add('hero-done'), 2200);
+  if (document.body.classList.contains('loaded')) arm();
+  else window.addEventListener('load', arm);
+
+  /* Scroll drift — rows part at different speeds + tracking expands */
+  if (!REDUCE && window.innerWidth > 960) {
+    const speeds = [0.16, 0.10, 0.05];
+    window.addEventListener('scroll', () => {
+      if (!document.body.classList.contains('hero-done')) return;
+      const y = window.scrollY;
+      if (y > window.innerHeight * 1.2) return;
+      rows.forEach((ni, r) => {
+        ni.style.transform = `translateY(${y * speeds[r]}px)`;
+        ni.style.letterSpacing = `calc(-0.03em + ${Math.min(y * 0.00006, 0.04)}em)`;
+        ni.style.opacity = Math.max(1 - y / (window.innerHeight * 0.9), 0);
+      });
+    }, { passive: true });
+  }
+})();
+
+/* ── 4 · FLOATING PROJECT PREVIEW ───────────────────────────── */
+(function projPreview(){
+  const pv = document.getElementById('proj-preview');
+  if (!pv || !FINE || REDUCE) return;
+  const tiles = pv.querySelectorAll('.pp-tile');
+  let px = 0, py = 0, tx = 0, ty = 0, active = false, raf = null;
+
+  function loop(){
+    px += (tx - px) * 0.12;
+    py += (ty - py) * 0.12;
+    pv.style.left = px + 'px';
+    pv.style.top  = py + 'px';
+    raf = (active || Math.abs(tx - px) > 0.5) ? requestAnimationFrame(loop) : null;
+  }
+
+  document.querySelectorAll('.js-project').forEach(proj => {
+    proj.addEventListener('mouseenter', e => {
+      const id = proj.dataset.project;
+      tiles.forEach(t => t.classList.toggle('on', t.dataset.pp === id));
+      tx = e.clientX; ty = e.clientY;
+      if (!active) { px = tx; py = ty; }   // snap on first entry, no fly-in
+      active = true;
+      pv.classList.add('on');
+      if (!raf) raf = requestAnimationFrame(loop);
+    });
+    proj.addEventListener('mousemove', e => {
+      tx = e.clientX; ty = e.clientY;
+      /* Hide the tile over links/tags — the cursor is the affordance
+         there, and a floating image over a URL reads as confusion. */
+      const overLink = e.target.closest('a, .proj-tags');
+      pv.classList.toggle('on', active && !overLink);
+      document.body.classList.toggle('c-project', !overLink);
+    });
+    proj.addEventListener('mouseleave', () => {
+      active = false;
+      pv.classList.remove('on');
+    });
+  });
+})();
+
+/* ── 5 · HEADING MASK-REVEAL ────────────────────────────────── */
+(function maskReveal(){
+  if (REDUCE) return;
+  ['about-h', 'feat-h', 'proj-h', 'skills-h', 'contact-h'].forEach(id => {
+    const h = document.getElementById(id);
+    if (!h) return;
+    /* Group child nodes into lines split on <br>, wrap each line in
+       .mask-line > .mask-inner so it wipes up from behind a clip edge. */
+    const lines = [[]];
+    [...h.childNodes].forEach(n => {
+      if (n.nodeName === 'BR') lines.push([]);
+      else lines[lines.length - 1].push(n);
+    });
+    h.innerHTML = '';
+    lines.forEach(nodes => {
+      const outer = document.createElement('span');
+      outer.className = 'mask-line';
+      const inner = document.createElement('span');
+      inner.className = 'mask-inner';
+      nodes.forEach(n => inner.appendChild(n));
+      outer.appendChild(inner);
+      h.appendChild(outer);
+    });
+    h.classList.add('has-mask');
+  });
+})();
+
+/* ── 6 · FEATURED MOUSE-PARALLAX ────────────────────────────── */
+(function featParallax(){
+  const feat = document.getElementById('featured');
+  if (!feat || !FINE || REDUCE) return;
+  const cards = feat.querySelectorAll('.fv-card, .fv-circle');
+  const depths = [8, 5, 10, 4];
+  feat.addEventListener('mousemove', e => {
+    const r = feat.getBoundingClientRect();
+    const nx = (e.clientX - r.left) / r.width  - 0.5;   // -0.5 … 0.5
+    const ny = (e.clientY - r.top)  / r.height - 0.5;
+    cards.forEach((c, i) => {
+      const d = depths[i % depths.length];
+      c.style.transform = `translate(${-nx * d}px, ${-ny * d}px)`;
+    });
+  });
+  feat.addEventListener('mouseleave', () => {
+    cards.forEach(c => { c.style.transform = ''; });
+  });
+})();
+
+/* ── 7 · SKILL PILLS — cascade reveal + cursor spotlight ────── */
+(function skillPills(){
+  const right = document.querySelector('.skills-right');
+  if (!right) return;
+  const pills = right.querySelectorAll('.sk');
+
+  if (REDUCE) { pills.forEach(p => p.classList.add('in')); return; }
+
+  /* Cascade: pills ripple in one-by-one per group when it scrolls in */
+  const groupIO = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      en.target.querySelectorAll('.sk').forEach((p, i) => {
+        setTimeout(() => p.classList.add('in'), i * 45);
+      });
+      groupIO.unobserve(en.target);
+    });
+  }, { threshold: 0.3 });
+  right.querySelectorAll('.skill-group').forEach(g => groupIO.observe(g));
+
+  /* Spotlight: each pill gets the cursor position relative to itself,
+     so a gold glow washes across neighbouring pills as you move. */
+  if (FINE) {
+    right.addEventListener('mousemove', e => {
+      right.classList.add('glow');
+      pills.forEach(p => {
+        const r = p.getBoundingClientRect();
+        p.style.setProperty('--gx', (e.clientX - r.left) + 'px');
+        p.style.setProperty('--gy', (e.clientY - r.top) + 'px');
+      });
+    });
+    right.addEventListener('mouseleave', () => right.classList.remove('glow'));
+  }
+})();
+
+/* ── 8 · LOCAL TIME (IST) ───────────────────────────────────── */
+(function localTime(){
+  const el = document.getElementById('local-time');
+  if (!el) return;
+  const fmt = new Intl.DateTimeFormat('en-IN', {
+    hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZone: 'Asia/Kolkata'
+  });
+  const tick = () => { el.textContent = fmt.format(new Date()); };
+  tick();
+  setInterval(tick, 30000);
+})();
+
+/* ── 10 · LERP SMOOTH SCROLL ────────────────────────────────── */
+(function smoothScroll(){
+  if (!FINE || REDUCE) return;
+
+  /* CRITICAL: kill CSS scroll-behavior:smooth while the lerp drives.
+     Otherwise every per-frame scrollTo() starts its own ~500ms browser
+     animation and they stack into seconds of lag. */
+  document.documentElement.style.scrollBehavior = 'auto';
+
+  let target = window.scrollY, current = target, raf = null;
+  const maxY = () => document.documentElement.scrollHeight - window.innerHeight;
+  const jump = y => window.scrollTo({ top: y, left: 0, behavior: 'instant' });
+
+  function loop(){
+    current += (target - current) * 0.14;
+    if (Math.abs(target - current) < 0.5) {
+      current = target;
+      jump(current);
+      raf = null;
+      return;
+    }
+    jump(current);
+    raf = requestAnimationFrame(loop);
+  }
+  const start = () => { if (!raf) raf = requestAnimationFrame(loop); };
+
+  window.addEventListener('wheel', e => {
+    if (document.body.classList.contains('menu-open')) return;
+    if (e.ctrlKey) return;                    // pinch-zoom stays native
+    e.preventDefault();
+    const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    target = Math.max(0, Math.min(target + dy, maxY()));
+    start();
+  }, { passive: false });
+
+  /* Anchor links ride the lerp too (CSS smooth is disabled above) */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const dest = document.querySelector(a.getAttribute('href'));
+      if (!dest) return;
+      e.preventDefault();
+      target = Math.min(dest.offsetTop, maxY());
+      start();
+    });
+  });
+
+  /* Keyboard / scrollbar drags scroll natively — resync so the next
+     wheel tick doesn't yank the page back. */
+  window.addEventListener('scroll', () => {
+    if (!raf) { target = window.scrollY; current = target; }
+  }, { passive: true });
+})();
 </script>
 </body>
 </html>
