@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ayush Salunkhe — Software Engineer & Builder">
 <meta property="og:description" content="Software engineer building AI-integrated products and production-grade applications.">
-<meta property="og:url" content="https://ayush-salunkhe-portfolio.vercel.app">
+<meta property="og:url" content="https://ayushsalunkhe.vercel.app">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F7F3ED'/%3E%3Ctext x='50%25' y='54%25' font-family='Georgia,serif' font-size='34' font-style='italic' fill='%239B7940' text-anchor='middle' dominant-baseline='central'%3EA%3C/text%3E%3C/svg%3E">
 <meta name="color-scheme" content="light">
@@ -220,6 +220,7 @@ nav.scrolled {
   color: var(--gold);
   transition: background .35s, color .35s, transform .5s var(--ease);
   will-change: transform;
+  position: relative; overflow: hidden;
   cursor: none;
   flex-shrink: 0;
   white-space: nowrap;
@@ -579,12 +580,13 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 }
 .hd i { font-style: italic; color: var(--gold); font-weight: 200; }
 
-/* Reveal */
+/* Reveal — fade + rise + focus-pull (blur resolves as content enters) */
 .rv {
   opacity:0; transform: translateY(32px);
-  transition: opacity .9s var(--ease), transform .9s var(--ease);
+  filter: blur(6px);
+  transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease);
 }
-.rv.vis { opacity:1; transform:none; }
+.rv.vis { opacity:1; transform:none; filter: blur(0); }
 .d1{transition-delay:.1s} .d2{transition-delay:.22s} .d3{transition-delay:.36s}
 .d4{transition-delay:.52s} .d5{transition-delay:.70s}
 
@@ -603,7 +605,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .rv.vis .mask-inner { transform: none; }
 /* Headings that get the mask treatment drop the fade-up offset —
    the wipe is the reveal. */
-.rv.has-mask { transform: none; opacity: 1; }
+.rv.has-mask { transform: none; opacity: 1; filter: none; }
 
 /* Magnetic elements — JS translates these toward the cursor.
    Transition handles the spring-back on mouseleave. */
@@ -737,7 +739,9 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   letter-spacing:.14em; text-transform:uppercase;
   color:var(--ink-dark); background:var(--gold-2);
   padding:16px 36px; position:relative; overflow:hidden; cursor:none;
-  transition: transform .35s var(--ease);
+  /* Includes the .rv entrance props — this shorthand would otherwise
+     override them (it's later in source at equal specificity). */
+  transition: transform .5s var(--ease), opacity .9s var(--ease), filter .9s var(--ease);
 }
 .feat-link::before {
   content:''; position:absolute; inset:0;
@@ -797,7 +801,10 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   gap: 36px; align-items: start;
   padding: 52px 0; border-top: 1px solid var(--border);
   position: relative; cursor: none;
-  transition: background .4s;
+  /* Must re-declare the .rv transition set: this shorthand would
+     otherwise override it (same property, later in source) and the
+     row entrances would hard-cut instead of easing. */
+  transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease);
 }
 .project:last-child { border-bottom: 1px solid var(--border); }
 .project::before {
@@ -965,11 +972,27 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .edu-table { width:100%; border-collapse:collapse; min-width: 600px; }
 .edu-table tbody tr {
   border-bottom:1px solid var(--border);
-  transition: background .35s;
   cursor:default;
+  /* Ledger line-draw: a gold rule draws across each row's bottom edge
+     as it reveals (background-size animation — tr pseudo-elements are
+     unreliable). The shorthand re-declares the .rv entrance props
+     since it would otherwise override them; per-property delays give
+     the stagger (the .d1/.d2 utility delays lose to this rule's
+     specificity, so stagger is re-created via nth-child below). */
+  background-image: linear-gradient(90deg, var(--gold), var(--gold-2));
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 1px;
+  transition: opacity .9s var(--ease), transform .9s var(--ease),
+              filter .9s var(--ease),
+              background-size 1.2s var(--ease) .3s,
+              background-color .35s;
 }
+.edu-table tbody tr:nth-child(2) { transition-delay: .18s, .18s, .18s, .48s, 0s; }
+.edu-table tbody tr:nth-child(3) { transition-delay: .36s, .36s, .36s, .66s, 0s; }
+.edu-table tbody tr.vis { background-size: 100% 1px; }
 .edu-table tbody tr:first-child { border-top:1px solid var(--border); }
-.edu-table tbody tr:hover { background:rgba(247,243,237,.9); }
+.edu-table tbody tr:hover { background-color:rgba(247,243,237,.9); }
 .edu-td { padding:36px 0; vertical-align:top; }
 .edu-td-yr {
   width:160px; font-family:var(--mono); font-size:10px; letter-spacing:.12em;
@@ -1147,6 +1170,69 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 }
 .footer-links a:hover { color:var(--gold-2); }
 
+/* ═══ PREMIUM LAYER ═══════════════════════════════════════════════
+   Curtain footer · velocity marquee · dark-aware cursor · CTA sheen ·
+   ambient glow · custom scrollbar. JS engines live at the end of the
+   script block under the same banner.
+═══════════════════════════════════════════════════════════════ */
+
+/* Curtain reveal — the cream page lifts away to expose the fixed
+   contact section beneath it. #contact-spacer (JS-sized to contact's
+   height) preserves scroll length. body.no-curtain is the fallback
+   when contact is taller than the viewport (and the no-JS default —
+   it's set on <body> and removed by the sizing script). */
+#page {
+  position: relative; z-index: 2;
+  background: var(--cream);
+  box-shadow: 0 40px 80px -24px rgba(26,21,15,.35);
+}
+#contact { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1; }
+#contact-spacer { height: 0; }
+body.no-curtain #contact { position: relative; z-index: auto; }
+body.no-curtain #contact-spacer { display: none; }
+
+/* Marquee velocity wrapper — JS skews it with scroll speed */
+.marquee-velocity { will-change: transform; }
+
+/* Cursor brightens over the dark sections (JS toggles body.on-dark).
+   Chosen over mix-blend-mode:difference, which turns the gold dot a
+   muddy blue over cream — luminance-aware swap keeps both looks
+   on-palette. */
+body.on-dark #cur-dot { background: var(--gold-light); }
+body.on-dark #cur-ring { border-color: rgba(212,184,122,.55); }
+body.on-dark.c-project #cur-ring { background: rgba(212,184,122,.1); }
+
+/* One-shot gold sheen across CTAs — light catching metal, runs once */
+.sheen-el::after {
+  content: ''; position: absolute; top: -30%; bottom: -30%; left: 0;
+  width: 45%;
+  background: linear-gradient(105deg, transparent, rgba(254,252,248,.5), transparent);
+  transform: translateX(-180%) skewX(-18deg);
+  pointer-events: none;
+}
+.sheen-el.shine::after { animation: sheen 1.1s var(--ease) .15s both; }
+@keyframes sheen { to { transform: translateX(320%) skewX(-18deg); } }
+
+/* Ambient cursor glow inside dark sections (JS-injected element) */
+.cursor-glow {
+  position: absolute; top: 0; left: 0;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,184,122,.08) 0%, transparent 60%);
+  pointer-events: none; opacity: 0; z-index: 0;
+  transition: transform .7s var(--ease), opacity .6s ease;
+  mix-blend-mode: screen;
+}
+
+/* Custom scrollbar — hairline stone, gold on hover */
+html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
+::-webkit-scrollbar { width: 11px; }
+::-webkit-scrollbar-track { background: var(--cream-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--stone-3);
+  border: 3px solid var(--cream-2); border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--gold-2); }
+
 /* ═══ RESPONSIVE ══════════════════════════════════════════════════ */
 @media(max-width:1024px){
   nav { padding: 25px 40px; }
@@ -1263,9 +1349,11 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   .ni .ch, .mask-inner, .fv-card, .sk {
     opacity: 1 !important;
     transform: none !important;
+    filter: none !important;
     width: auto;
   }
-  #proj-preview { display: none !important; }
+  .edu-table tbody tr { background-size: 100% 1px !important; }
+  #proj-preview, .cursor-glow { display: none !important; }
   #loader { display: none !important; }
   .marquee-track { animation: none !important; }
   /* Restore the native cursor when motion is reduced (overrides the
@@ -1275,7 +1363,9 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 }
 </style>
 </head>
-<body>
+<!-- no-curtain is the no-JS default; the curtain sizing script removes
+     it once it has measured the contact section. -->
+<body class="no-curtain">
 
 <a href="#about" class="skip-link">Skip to content</a>
 
@@ -1339,6 +1429,10 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 </div>
 
+<!-- #page wraps everything above the contact section: it scrolls over
+     the fixed contact like a lifting curtain (see PREMIUM LAYER CSS). -->
+<div id="page">
+
 <!-- ══════════════════ HERO ══════════════════════════════════════ -->
 <section id="hero" aria-label="Introduction">
   <div class="h-vline"    aria-hidden="true"></div>
@@ -1386,6 +1480,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 <!-- Marquee -->
 <div class="marquee" aria-hidden="true">
   <div class="marquee-mask">
+  <div class="marquee-velocity">
   <div class="marquee-track">
     <div class="mitem">
       <span>React</span><span class="mdot"></span><span>TypeScript</span><span class="mdot"></span>
@@ -1409,6 +1504,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
       <span>PostgreSQL</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
       <span>pgvector</span><span class="mdot"></span><span>Vercel</span>
     </div>
+  </div>
   </div>
   </div>
 </div>
@@ -1771,6 +1867,11 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   </div>
 </section>
 
+</div><!-- /#page -->
+<!-- Sized by JS to match #contact so the document keeps its full
+     scroll length while contact sits fixed behind the page. -->
+<div id="contact-spacer" aria-hidden="true"></div>
+
 <!-- ══════════════════ CONTACT ════════════════════════════════════ -->
 <section id="contact" aria-labelledby="contact-h">
   <div class="ct-amb" aria-hidden="true"></div>
@@ -1848,12 +1949,30 @@ if (cur && curDot && finePointer && !cursorReduce) {
 
   /* Dot snaps to the pointer instantly; ring trails with easing.
      transform/translate3d only — no layout thrash per frame. */
+  const featuredEl = document.getElementById('featured');
+  const pageEl = document.getElementById('page');
+  let wasDark = false;
   (function loop(){
     rx += (mx - rx) * 0.2;
     ry += (my - ry) * 0.2;
     cur.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
     curDot.style.transform =
       `translate3d(${mx - rx}px, ${my - ry}px, 0) translate(-50%, -50%)`;
+    /* Dark-section awareness: brighten the gold cursor over ink.
+       Contact is position:fixed behind the page, so its own rect is
+       always at the viewport bottom — instead, the cursor is "over
+       contact" only when it's below the page's bottom edge (i.e. the
+       curtain has actually revealed it). */
+    let dark = false;
+    if (featuredEl) {
+      const r = featuredEl.getBoundingClientRect();
+      if (my >= r.top && my <= r.bottom) dark = true;
+    }
+    if (!dark && pageEl && my > pageEl.getBoundingClientRect().bottom) dark = true;
+    if (dark !== wasDark) {
+      wasDark = dark;
+      document.body.classList.toggle('on-dark', dark);
+    }
     requestAnimationFrame(loop);
   })();
 } else if (cur) {
@@ -1869,12 +1988,23 @@ document.querySelectorAll('a, button, .ct-cta, .feat-link, .nav-cta').forEach(el
   el.addEventListener('mouseleave',()=>document.body.classList.remove('c-link'));
 });
 
-/* ── LOADER ─────────────────────────────────────────────────── */
+/* ── LOADER (+ tab-title progress while loading) ────────────── */
 (function initLoader(){
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const baseTitle = document.title;
+  let titleTimer = null;
+  if (!reduce) {
+    let f = 0;
+    titleTimer = setInterval(() => {
+      f = (f + 1) % 6;
+      document.title = '▓'.repeat(f) + '░'.repeat(5 - f) + ' Ayush Salunkhe';
+    }, 160);
+  }
   const finish = () => {
     const loader = document.getElementById('loader');
     if (loader) loader.classList.add('out');
+    if (titleTimer) clearInterval(titleTimer);
+    document.title = baseTitle;
     setTimeout(() => {
       if (loader) loader.style.display = 'none';
       document.body.classList.add('loaded');
@@ -1900,12 +2030,16 @@ window.addEventListener('scroll',()=>{
 const revIO=new IntersectionObserver(entries=>{
   entries.forEach(e=>{
     if(e.isIntersecting){
-      e.target.classList.add('vis');
+      reveal(e.target);   /* adds .vis + scrambles mono labels (defined in premium layer) */
       revIO.unobserve(e.target);
     }
   });
 },{threshold:0.1, rootMargin:'0px 0px -36px 0px'});
-document.querySelectorAll('.rv,.stag').forEach(el=>revIO.observe(el));
+/* Contact is position:fixed behind the curtain, so it would always
+   "intersect" — its reveals are driven by the curtain engine instead. */
+[...document.querySelectorAll('.rv,.stag')]
+  .filter(el => !el.closest('#contact'))
+  .forEach(el => revIO.observe(el));
 
 /* ── STAT COUNTERS ──────────────────────────────────────────── */
 const statIO=new IntersectionObserver(entries=>{
@@ -1933,7 +2067,16 @@ const navAs=document.querySelectorAll('.nav-link');
 window.addEventListener('scroll',()=>{
   const y=window.scrollY+130;
   let cur='hero';
-  secs.forEach(s=>{ if(y>=s.offsetTop) cur=s.id; });
+  secs.forEach(s=>{
+    /* Fixed contact reports offsetTop 0 — use its scroll-length
+       spacer as the section boundary while the curtain is active. */
+    let top = s.offsetTop;
+    if (s.id === 'contact' && !document.body.classList.contains('no-curtain')) {
+      const sp = document.getElementById('contact-spacer');
+      if (sp) top = sp.offsetTop;
+    }
+    if(y>=top) cur=s.id;
+  });
   navAs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
 },{passive:true});
 
@@ -2187,10 +2330,15 @@ if (FINE && !REDUCE) {
     start();
   }, { passive: false });
 
-  /* Anchor links ride the lerp too (CSS smooth is disabled above) */
+  /* Anchor links ride the lerp too (CSS smooth is disabled above).
+     #contact is fixed (offsetTop 0) — scroll to its spacer instead. */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
-      const dest = document.querySelector(a.getAttribute('href'));
+      const href = a.getAttribute('href');
+      let dest = document.querySelector(href);
+      if (href === '#contact' && !document.body.classList.contains('no-curtain')) {
+        dest = document.getElementById('contact-spacer') || dest;
+      }
       if (!dest) return;
       e.preventDefault();
       target = Math.min(dest.offsetTop, maxY());
@@ -2204,6 +2352,179 @@ if (FINE && !REDUCE) {
     if (!raf) { target = window.scrollY; current = target; }
   }, { passive: true });
 })();
+
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM LAYER — curtain footer, scramble labels, velocity
+   marquee, CTA sheen, ambient glow, greeting, console signature.
+═══════════════════════════════════════════════════════════════ */
+
+/* Shared reveal: adds .vis and decodes mono labels once.
+   Function declarations hoist, so the reveal observer above can
+   call these before this point in the source. */
+function reveal(el){
+  if (el.classList.contains('vis')) return;
+  el.classList.add('vis');
+  if (el.matches('.stag, .feat-stag, .ct-stag')) scramble(el);
+}
+
+/* Text scramble — mono labels decode into place, left to right.
+   Only letters/digits cycle; dashes, dots and spaces hold still. */
+function scramble(el){
+  if (REDUCE) return;
+  const nodes = [...el.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
+  const node = nodes[nodes.length - 1];
+  if (!node) return;
+  const final = node.textContent;
+  el.setAttribute('aria-label', final.trim());
+  const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&';
+  const t0 = performance.now(), dur = 900;
+  (function tick(now){
+    const p = Math.min((now - t0) / dur, 1);
+    const solved = Math.floor(p * final.length);
+    node.textContent = [...final].map((c, i) =>
+      (i < solved || !/[a-zA-Z0-9]/.test(c)) ? c : glyphs[(Math.random() * glyphs.length) | 0]
+    ).join('');
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+/* ── CURTAIN FOOTER ─────────────────────────────────────────── */
+(function curtain(){
+  const contact = document.getElementById('contact');
+  const spacer = document.getElementById('contact-spacer');
+  if (!contact || !spacer) return;
+
+  /* Size the spacer to contact's height so scroll length is
+     preserved. If contact is taller than the viewport the curtain
+     can't fully reveal it — fall back to normal document flow. */
+  function size(){
+    document.body.classList.remove('no-curtain');
+    const h = contact.offsetHeight;
+    if (h > window.innerHeight) {
+      document.body.classList.add('no-curtain');
+      spacer.style.height = '0px';
+    } else {
+      spacer.style.height = h + 'px';
+    }
+  }
+  size();
+  window.addEventListener('resize', size);
+  window.addEventListener('load', size);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
+
+  /* Contact reveals fire when the spacer scrolls into view (or
+     contact itself in the no-curtain fallback — the fixed variant
+     always intersects, so it's filtered out). */
+  const items = contact.querySelectorAll('.rv, .stag');
+  const fire = () => {
+    items.forEach(reveal);
+    setTimeout(() => {
+      const cta = document.querySelector('.ct-cta');
+      if (cta) cta.classList.add('shine');
+    }, 700);
+  };
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      if (e.target === contact && !document.body.classList.contains('no-curtain')) return;
+      fire();
+      io.disconnect();
+    });
+  }, { threshold: 0.15 });
+  io.observe(spacer);
+  io.observe(contact);
+
+  /* Native fallback for #contact anchors when the lerp scroll is
+     inactive (touch / reduced motion): a default jump to a fixed
+     element goes nowhere, so scroll to the spacer instead. */
+  if (!(FINE && !REDUCE)) {
+    document.querySelectorAll('a[href="#contact"]').forEach(a => {
+      a.addEventListener('click', e => {
+        if (document.body.classList.contains('no-curtain')) return;
+        e.preventDefault();
+        window.scrollTo({ top: spacer.offsetTop, behavior: REDUCE ? 'auto' : 'smooth' });
+      });
+    });
+  }
+})();
+
+/* ── VELOCITY MARQUEE ───────────────────────────────────────── */
+(function velocityMarquee(){
+  const wrap = document.querySelector('.marquee-velocity');
+  if (!wrap || REDUCE) return;
+  let lastY = window.scrollY, vel = 0, raf = null;
+  function tick(){
+    vel *= 0.9;
+    if (Math.abs(vel) < 0.05) { wrap.style.transform = ''; raf = null; return; }
+    const v = Math.max(-14, Math.min(14, vel));
+    wrap.style.transform =
+      `skewX(${(v * 0.32).toFixed(2)}deg) translateX(${(-v * 1.6).toFixed(1)}px)`;
+    raf = requestAnimationFrame(tick);
+  }
+  window.addEventListener('scroll', () => {
+    vel += (window.scrollY - lastY) * 0.05;
+    lastY = window.scrollY;
+    if (!raf) raf = requestAnimationFrame(tick);
+  }, { passive: true });
+})();
+
+/* ── CTA SHEEN (one-shot) ───────────────────────────────────── */
+(function ctaSheen(){
+  if (REDUCE) return;
+  document.querySelectorAll('.nav-cta, .feat-link, .ct-cta')
+    .forEach(el => el.classList.add('sheen-el'));
+  const nav = document.querySelector('.nav-cta');
+  if (nav) setTimeout(() => nav.classList.add('shine'), 2400);
+  const feat = document.querySelector('.feat-link');
+  if (feat) {
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) {
+        setTimeout(() => feat.classList.add('shine'), 500);
+        io.disconnect();
+      }
+    }), { threshold: 0.8 });
+    io.observe(feat);
+  }
+  /* .ct-cta shines from the curtain engine's reveal */
+})();
+
+/* ── AMBIENT CURSOR GLOW (dark sections) ────────────────────── */
+(function ambientGlow(){
+  if (!FINE || REDUCE) return;
+  ['featured', 'contact'].forEach(id => {
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    const g = document.createElement('div');
+    g.className = 'cursor-glow';
+    g.setAttribute('aria-hidden', 'true');
+    sec.appendChild(g);
+    sec.addEventListener('mousemove', e => {
+      const r = sec.getBoundingClientRect();
+      g.style.transform = `translate(${e.clientX - r.left - 300}px, ${e.clientY - r.top - 300}px)`;
+      g.style.opacity = '1';
+    });
+    sec.addEventListener('mouseleave', () => { g.style.opacity = '0'; });
+  });
+})();
+
+/* ── TIME-AWARE GREETING ────────────────────────────────────── */
+(function greeting(){
+  const bar = document.querySelector('.hero-eyebrow span');
+  if (!bar) return;
+  const h = new Date().getHours();
+  const g = h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  bar.after(g + ' — ');
+})();
+
+/* ── CONSOLE SIGNATURE ──────────────────────────────────────── */
+console.log(
+  '%cAyush %cSalunkhe%c\n\nSoftware Engineer & Builder — Karjat, IN' +
+  '\nCurious how this was built? Let’s talk.\n%c→ ayush.salunkhe7371@gmail.com\n',
+  'font-family: Georgia, serif; font-size: 26px; font-weight: 300; color: #1A150F;',
+  'font-family: Georgia, serif; font-size: 26px; font-style: italic; color: #9B7940;',
+  'font-family: monospace; font-size: 12px; color: #6B5D4F;',
+  'font-family: monospace; font-size: 12px; font-weight: bold; color: #9B7940;'
+);
 </script>
 </body>
 </html>
