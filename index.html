@@ -1171,25 +1171,10 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .footer-links a:hover { color:var(--gold-2); }
 
 /* ═══ PREMIUM LAYER ═══════════════════════════════════════════════
-   Curtain footer · velocity marquee · dark-aware cursor · CTA sheen ·
-   ambient glow · custom scrollbar. JS engines live at the end of the
-   script block under the same banner.
+   Velocity marquee · dark-aware cursor · CTA sheen · ambient glow ·
+   custom scrollbar. JS engines live at the end of the script block
+   under the same banner.
 ═══════════════════════════════════════════════════════════════ */
-
-/* Curtain reveal — the cream page lifts away to expose the fixed
-   contact section beneath it. #contact-spacer (JS-sized to contact's
-   height) preserves scroll length. body.no-curtain is the fallback
-   when contact is taller than the viewport (and the no-JS default —
-   it's set on <body> and removed by the sizing script). */
-#page {
-  position: relative; z-index: 2;
-  background: var(--cream);
-  box-shadow: 0 40px 80px -24px rgba(26,21,15,.35);
-}
-#contact { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1; }
-#contact-spacer { height: 0; }
-body.no-curtain #contact { position: relative; z-index: auto; }
-body.no-curtain #contact-spacer { display: none; }
 
 /* Marquee velocity wrapper — JS skews it with scroll speed */
 .marquee-velocity { will-change: transform; }
@@ -1363,9 +1348,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
 }
 </style>
 </head>
-<!-- no-curtain is the no-JS default; the curtain sizing script removes
-     it once it has measured the contact section. -->
-<body class="no-curtain">
+<body>
 
 <a href="#about" class="skip-link">Skip to content</a>
 
@@ -1428,10 +1411,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
     <a href="mailto:ayush.salunkhe7371@gmail.com" class="mm-email">ayush.salunkhe7371@gmail.com</a>
   </div>
 </div>
-
-<!-- #page wraps everything above the contact section: it scrolls over
-     the fixed contact like a lifting curtain (see PREMIUM LAYER CSS). -->
-<div id="page">
 
 <!-- ══════════════════ HERO ══════════════════════════════════════ -->
 <section id="hero" aria-label="Introduction">
@@ -1867,11 +1846,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
   </div>
 </section>
 
-</div><!-- /#page -->
-<!-- Sized by JS to match #contact so the document keeps its full
-     scroll length while contact sits fixed behind the page. -->
-<div id="contact-spacer" aria-hidden="true"></div>
-
 <!-- ══════════════════ CONTACT ════════════════════════════════════ -->
 <section id="contact" aria-labelledby="contact-h">
   <div class="ct-amb" aria-hidden="true"></div>
@@ -1949,8 +1923,8 @@ if (cur && curDot && finePointer && !cursorReduce) {
 
   /* Dot snaps to the pointer instantly; ring trails with easing.
      transform/translate3d only — no layout thrash per frame. */
-  const featuredEl = document.getElementById('featured');
-  const pageEl = document.getElementById('page');
+  const darkSecs = ['featured', 'contact']
+    .map(id => document.getElementById(id)).filter(Boolean);
   let wasDark = false;
   (function loop(){
     rx += (mx - rx) * 0.2;
@@ -1958,17 +1932,12 @@ if (cur && curDot && finePointer && !cursorReduce) {
     cur.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
     curDot.style.transform =
       `translate3d(${mx - rx}px, ${my - ry}px, 0) translate(-50%, -50%)`;
-    /* Dark-section awareness: brighten the gold cursor over ink.
-       Contact is position:fixed behind the page, so its own rect is
-       always at the viewport bottom — instead, the cursor is "over
-       contact" only when it's below the page's bottom edge (i.e. the
-       curtain has actually revealed it). */
+    /* Dark-section awareness: brighten the gold cursor over ink. */
     let dark = false;
-    if (featuredEl) {
-      const r = featuredEl.getBoundingClientRect();
-      if (my >= r.top && my <= r.bottom) dark = true;
+    for (const s of darkSecs) {
+      const r = s.getBoundingClientRect();
+      if (my >= r.top && my <= r.bottom) { dark = true; break; }
     }
-    if (!dark && pageEl && my > pageEl.getBoundingClientRect().bottom) dark = true;
     if (dark !== wasDark) {
       wasDark = dark;
       document.body.classList.toggle('on-dark', dark);
@@ -2035,11 +2004,7 @@ const revIO=new IntersectionObserver(entries=>{
     }
   });
 },{threshold:0.1, rootMargin:'0px 0px -36px 0px'});
-/* Contact is position:fixed behind the curtain, so it would always
-   "intersect" — its reveals are driven by the curtain engine instead. */
-[...document.querySelectorAll('.rv,.stag')]
-  .filter(el => !el.closest('#contact'))
-  .forEach(el => revIO.observe(el));
+document.querySelectorAll('.rv,.stag').forEach(el=>revIO.observe(el));
 
 /* ── STAT COUNTERS ──────────────────────────────────────────── */
 const statIO=new IntersectionObserver(entries=>{
@@ -2067,16 +2032,7 @@ const navAs=document.querySelectorAll('.nav-link');
 window.addEventListener('scroll',()=>{
   const y=window.scrollY+130;
   let cur='hero';
-  secs.forEach(s=>{
-    /* Fixed contact reports offsetTop 0 — use its scroll-length
-       spacer as the section boundary while the curtain is active. */
-    let top = s.offsetTop;
-    if (s.id === 'contact' && !document.body.classList.contains('no-curtain')) {
-      const sp = document.getElementById('contact-spacer');
-      if (sp) top = sp.offsetTop;
-    }
-    if(y>=top) cur=s.id;
-  });
+  secs.forEach(s=>{ if(y>=s.offsetTop) cur=s.id; });
   navAs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
 },{passive:true});
 
@@ -2330,15 +2286,10 @@ if (FINE && !REDUCE) {
     start();
   }, { passive: false });
 
-  /* Anchor links ride the lerp too (CSS smooth is disabled above).
-     #contact is fixed (offsetTop 0) — scroll to its spacer instead. */
+  /* Anchor links ride the lerp too (CSS smooth is disabled above) */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
-      const href = a.getAttribute('href');
-      let dest = document.querySelector(href);
-      if (href === '#contact' && !document.body.classList.contains('no-curtain')) {
-        dest = document.getElementById('contact-spacer') || dest;
-      }
+      const dest = document.querySelector(a.getAttribute('href'));
       if (!dest) return;
       e.preventDefault();
       target = Math.min(dest.offsetTop, maxY());
@@ -2354,8 +2305,8 @@ if (FINE && !REDUCE) {
 })();
 
 /* ═══════════════════════════════════════════════════════════════
-   PREMIUM LAYER — curtain footer, scramble labels, velocity
-   marquee, CTA sheen, ambient glow, greeting, console signature.
+   PREMIUM LAYER — scramble labels, velocity marquee, CTA sheen,
+   ambient glow, greeting, console signature.
 ═══════════════════════════════════════════════════════════════ */
 
 /* Shared reveal: adds .vis and decodes mono labels once.
@@ -2388,66 +2339,6 @@ function scramble(el){
   })(t0);
 }
 
-/* ── CURTAIN FOOTER ─────────────────────────────────────────── */
-(function curtain(){
-  const contact = document.getElementById('contact');
-  const spacer = document.getElementById('contact-spacer');
-  if (!contact || !spacer) return;
-
-  /* Size the spacer to contact's height so scroll length is
-     preserved. If contact is taller than the viewport the curtain
-     can't fully reveal it — fall back to normal document flow. */
-  function size(){
-    document.body.classList.remove('no-curtain');
-    const h = contact.offsetHeight;
-    if (h > window.innerHeight) {
-      document.body.classList.add('no-curtain');
-      spacer.style.height = '0px';
-    } else {
-      spacer.style.height = h + 'px';
-    }
-  }
-  size();
-  window.addEventListener('resize', size);
-  window.addEventListener('load', size);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
-
-  /* Contact reveals fire when the spacer scrolls into view (or
-     contact itself in the no-curtain fallback — the fixed variant
-     always intersects, so it's filtered out). */
-  const items = contact.querySelectorAll('.rv, .stag');
-  const fire = () => {
-    items.forEach(reveal);
-    setTimeout(() => {
-      const cta = document.querySelector('.ct-cta');
-      if (cta) cta.classList.add('shine');
-    }, 700);
-  };
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      if (e.target === contact && !document.body.classList.contains('no-curtain')) return;
-      fire();
-      io.disconnect();
-    });
-  }, { threshold: 0.15 });
-  io.observe(spacer);
-  io.observe(contact);
-
-  /* Native fallback for #contact anchors when the lerp scroll is
-     inactive (touch / reduced motion): a default jump to a fixed
-     element goes nowhere, so scroll to the spacer instead. */
-  if (!(FINE && !REDUCE)) {
-    document.querySelectorAll('a[href="#contact"]').forEach(a => {
-      a.addEventListener('click', e => {
-        if (document.body.classList.contains('no-curtain')) return;
-        e.preventDefault();
-        window.scrollTo({ top: spacer.offsetTop, behavior: REDUCE ? 'auto' : 'smooth' });
-      });
-    });
-  }
-})();
-
 /* ── VELOCITY MARQUEE ───────────────────────────────────────── */
 (function velocityMarquee(){
   const wrap = document.querySelector('.marquee-velocity');
@@ -2475,17 +2366,18 @@ function scramble(el){
     .forEach(el => el.classList.add('sheen-el'));
   const nav = document.querySelector('.nav-cta');
   if (nav) setTimeout(() => nav.classList.add('shine'), 2400);
-  const feat = document.querySelector('.feat-link');
-  if (feat) {
-    const io = new IntersectionObserver(entries => entries.forEach(e => {
-      if (e.isIntersecting) {
-        setTimeout(() => feat.classList.add('shine'), 500);
-        io.disconnect();
-      }
-    }), { threshold: 0.8 });
-    io.observe(feat);
-  }
-  /* .ct-cta shines from the curtain engine's reveal */
+  /* Scroll-triggered CTAs shine once, shortly after they enter view */
+  [document.querySelector('.feat-link'), document.querySelector('.ct-cta')]
+    .filter(Boolean)
+    .forEach(el => {
+      const io = new IntersectionObserver(entries => entries.forEach(e => {
+        if (e.isIntersecting) {
+          setTimeout(() => el.classList.add('shine'), 500);
+          io.disconnect();
+        }
+      }), { threshold: 0.8 });
+      io.observe(el);
+    });
 })();
 
 /* ── AMBIENT CURSOR GLOW (dark sections) ────────────────────── */
