@@ -44,6 +44,14 @@ html { font-size: 16px; scroll-behavior: smooth; overflow-x: hidden; }
   --ink-dark:     #100D08;
   --border:       #DDD5C8;
   --border-2:     #EAE3D9;
+  /* Temperature drift — each light section sits a touch warmer than
+     the one above it, so the page gradually warms toward the dark
+     contact block. The steps are deliberately near-invisible (~2%). */
+  --warm-1:       #F7F3ED;
+  --warm-2:       #F5F0E8;
+  --warm-3:       #F3EDE3;
+  --warm-4:       #F1EADE;
+  --white-warm:   #FDFAF4;
   --serif:        'Fraunces', Georgia, serif;
   --sans:         'Syne', sans-serif;
   --mono:         'DM Mono', monospace;
@@ -786,7 +794,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .fv-circle { position:absolute; bottom:12%; right:12%; width:48px; height:48px; border-radius:50%; border:1px solid rgba(155,121,64,.2); }
 
 /* ═══ PROJECTS ════════════════════════════════════════════════════ */
-#projects { background: var(--cream); overflow-x: clip; }
+#projects { background: var(--warm-1); overflow-x: clip; }
 .proj-hrow {
   display:flex; justify-content:space-between; align-items:flex-end;
   margin-bottom: 72px;
@@ -913,15 +921,35 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 @media (max-width: 960px) { #proj-preview { display: none; } }
 
 /* ═══ SKILLS ══════════════════════════════════════════════════════ */
-#skills { background: var(--white); }
+/* Asymmetric editorial break: a vertical rail, an offset heading
+   column, and a two-column group grid whose even members drop down —
+   deliberately off-grid so this section breaks the page's rhythm. */
+#skills { background: var(--white-warm); }
 .skills-layout {
-  display: grid; grid-template-columns: 300px 1fr;
-  gap: 88px; align-items: start;
+  display: grid; grid-template-columns: 44px 260px 1fr;
+  gap: 0 60px; align-items: start;
 }
+.skills-rail {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-family: var(--mono); font-size: 9px; letter-spacing: .34em;
+  text-transform: uppercase; color: var(--stone-3);
+  display: flex; align-items: center; gap: 18px;
+  justify-self: start; padding-top: 8px;
+}
+.skills-rail::after {
+  content: ''; display: block; width: 1px; height: 90px;
+  background: linear-gradient(to bottom, var(--gold-border), transparent);
+}
+.skills-left { padding-top: 54px; }   /* offset — the asymmetry */
 .skills-left-h { font-size:clamp(32px,4.5vw,60px); margin-bottom:22px; }
 .skills-left-p { font-size:15px; font-weight:300; line-height:1.82; color:var(--stone); }
-.skills-right { display:flex; flex-direction:column; gap:44px; }
-.skill-group {}
+.skills-right {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 40px 40px; align-items: start;
+}
+.skill-group { align-self: start; }
+.skill-group:nth-child(even) { margin-top: 52px; }  /* staggered drop */
+.skill-group:last-child { grid-column: 1 / -1; margin-top: 8px; }
 .sg-label {
   font-family:var(--mono); font-size:9px; letter-spacing:.2em; text-transform:uppercase;
   color:var(--stone-2); display:flex; align-items:center; gap:12px;
@@ -967,7 +995,7 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .sk span { position:relative; z-index:1; }
 
 /* ═══ EDUCATION ════════════════════════════════════════════════════ */
-#education { background: var(--cream-2); }
+#education { background: var(--warm-3); }
 .edu-table-container { width: 100%; overflow-x: auto; }
 .edu-table { width:100%; border-collapse:collapse; min-width: 600px; }
 .edu-table tbody tr {
@@ -1015,13 +1043,19 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   padding:5px 14px; border:1px solid var(--gold-border); color:var(--gold);
 }
 
-/* ═══ CERTS ═══════════════════════════════════════════════════════ */
-#certs { background: var(--cream); }
+/* ═══ CREDENTIALS ═════════════════════════════════════════════════
+   Replaces the former standalone #certs and #languages sections —
+   certifications plus a single compact languages row, one section.
+═══════════════════════════════════════════════════════════════ */
+#credentials { background: var(--warm-4); }
+.cred-grid { display:grid; grid-template-columns: 300px 1fr; gap: 80px; align-items:start; }
+.cred-h { font-size:clamp(32px,4.5vw,60px); }
+.cred-p { font-size:15px; font-weight:300; line-height:1.82; color:var(--stone); margin-top:20px; }
 .cert-list { display:flex; flex-direction:column; }
 .cert-item {
-  display:grid; grid-template-columns:52px 1fr auto;
-  gap:28px; align-items:center;
-  padding:28px 0; border-bottom:1px solid var(--border-2);
+  display:grid; grid-template-columns:44px 1fr auto;
+  gap:24px; align-items:center;
+  padding:22px 0; border-bottom:1px solid var(--border-2);
   position:relative; overflow:hidden;
   transition:padding-left .35s var(--ease);
 }
@@ -1029,19 +1063,22 @@ body.loaded .hero-lower { opacity:1; transform:none; }
 .cert-item::before {
   content:''; position:absolute; left:0; top:0; bottom:0;
   width:0; background:var(--gold-faint);
-  transition:width .5s var(--ease); z-index:-1;
+  transition:width .5s var(--ease); z-index:0;
 }
-.cert-item:hover { padding-left:18px; }
+.cert-item:hover { padding-left:16px; }
 .cert-item:hover::before { width:100%; }
+.cert-item > * { position:relative; z-index:1; }
 .cert-num {
   font-family:var(--serif); font-size:13px; font-weight:200;
-  color:var(--gold-2); letter-spacing:.02em;
+  font-style:italic; color:var(--gold-2); letter-spacing:.02em;
 }
 .cert-name {
-  font-family:var(--serif); font-size:18px; font-weight:300;
-  color:var(--ink); margin-bottom:3px;
+  display:block;
+  font-family:var(--serif); font-size:17px; font-weight:300;
+  color:var(--ink); margin-bottom:2px;
 }
 .cert-org {
+  display:block;
   font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase;
   color:var(--stone-2);
 }
@@ -1049,31 +1086,22 @@ body.loaded .hero-lower { opacity:1; transform:none; }
   font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase;
   color:var(--stone-2); white-space:nowrap;
 }
-
-/* ═══ LANGUAGES ════════════════════════════════════════════════════ */
-#languages { background: var(--white); padding: 64px; }
-.lang-inner {
-  display:flex; align-items:center; justify-content:space-between;
-  border:1px solid var(--border-2); padding:44px 52px;
-  background: var(--cream);
+/* Languages — one inline row, not a section of its own */
+.lang-row {
+  display:flex; align-items:baseline; gap:22px; flex-wrap:wrap;
+  margin-top:34px; padding-top:24px; border-top:1px solid var(--border-2);
 }
-.lang-left {
-  font-family:var(--mono); font-size:9px; letter-spacing:.22em; text-transform:uppercase;
-  color:var(--stone-2); display:flex; align-items:center; gap:14px;
+.lang-label {
+  font-family:var(--mono); font-size:9px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--stone-2);
+  display:inline-flex; align-items:center; gap:12px;
 }
-.lang-left span { display:inline-block; width:24px; height:1px; background:var(--border); }
-.lang-list { display:flex; align-items:center; gap:48px; }
-.lang-item { text-align:center; }
-.lang-name {
-  font-family:var(--serif); font-size:22px; font-weight:300;
-  color:var(--ink); letter-spacing:-.01em; margin-bottom:4px;
-  display:block;
+.lang-label::before { content:''; width:16px; height:1px; background:var(--gold); }
+.lang-names {
+  font-family:var(--serif); font-size:19px; font-weight:300;
+  font-style:italic; color:var(--ink-2); letter-spacing:-.01em;
 }
-.lang-level {
-  font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase;
-  color:var(--gold);
-}
-.lang-divider { width:1px; height:40px; background:var(--border); }
+.lang-names span { color:var(--stone-3); font-style:normal; margin:0 10px; }
 
 /* ═══ CONTACT ═════════════════════════════════════════════════════ */
 #contact {
@@ -1218,10 +1246,232 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold-2); }
 
+/* ═══ SUBSTANCE LAYER ═════════════════════════════════════════════
+   Image infrastructure · full-bleed showcase · project case grids ·
+   live GitHub strip · native scroll-driven animation.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Image slots ──────────────────────────────────────────────
+   Every img.shot starts invisible and is only faded in once JS
+   confirms it actually decoded (see the SHOTS engine). A missing
+   file therefore shows the designed placeholder underneath rather
+   than a broken-image icon — the page looks intentional either way. */
+img.shot {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  opacity: 0; transition: opacity .7s var(--ease);
+}
+[data-shot-host].has-shot img.shot { opacity: 1; }
+
+/* Featured: the mock UI cards ARE the placeholder — a real
+   screenshot replaces them the moment one is dropped in. */
+.feat-visual img.shot { position: absolute; inset: 0; z-index: 1; }
+.feat-visual .fv-card, .feat-visual .fv-line, .feat-visual .fv-circle {
+  transition: opacity .6s var(--ease);
+}
+.feat-visual.has-shot .fv-card,
+.feat-visual.has-shot .fv-line,
+.feat-visual.has-shot .fv-circle { opacity: 0; pointer-events: none; }
+
+/* Floating project previews: image sits under the label, with a
+   scrim that only appears once a real screenshot is present. */
+.pp-tile img.shot { position: absolute; inset: 0; z-index: 0; }
+.pp-scrim {
+  position: absolute; inset: 0; z-index: 1; opacity: 0;
+  background: linear-gradient(to top, rgba(11,9,6,.9) 0%, rgba(11,9,6,.15) 55%, rgba(11,9,6,.55) 100%);
+  transition: opacity .4s var(--ease); pointer-events: none;
+}
+.pp-tile.has-shot .pp-scrim { opacity: 1; }
+.pp-cat, .pp-name { position: relative; z-index: 2; }
+
+/* ── Release / download band ──────────────────────────────────
+   Full-bleed and content-sized (never a fixed viewport height), so
+   it can't read as empty space while the screenshot slot is still
+   waiting for a file. A screenshot, once dropped in, becomes the
+   background behind this content rather than the content itself. */
+#release {
+  position: relative; overflow: hidden;
+  background: var(--ink-dark);
+  border-top: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.release-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(110% 130% at 82% 15%, rgba(155,121,64,.20), transparent 60%),
+    linear-gradient(135deg, #14100A 0%, #221B10 52%, #322614 100%);
+}
+.release-bg img.shot { position: absolute; inset: 0; }
+.release-tint {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(11,9,6,.95) 0%, rgba(11,9,6,.82) 45%, rgba(11,9,6,.55) 100%),
+    linear-gradient(to top, rgba(11,9,6,.75), transparent 60%);
+}
+.release-inner {
+  position: relative; z-index: 2;
+  padding: 84px 64px;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 56px; align-items: end;
+}
+.rel-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--gold-2); margin-bottom: 20px;
+}
+.rel-eyebrow::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: #4ADE80; animation: statusPulse 2.5s ease infinite;
+}
+.rel-h {
+  font-family: var(--serif); font-weight: 200;
+  font-size: clamp(30px, 4.6vw, 62px); line-height: 1.04;
+  letter-spacing: -.03em; color: var(--cream);
+}
+.rel-h i { font-style: italic; color: var(--gold-2); }
+.rel-sub {
+  font-size: 15px; font-weight: 300; line-height: 1.75;
+  color: rgba(247,243,237,.5); max-width: 460px; margin-top: 18px;
+}
+.rel-right { display: flex; flex-direction: column; align-items: flex-end; gap: 16px; }
+.rel-cta {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-dark); background: var(--gold-2);
+  padding: 19px 40px; cursor: none;
+  position: relative; overflow: hidden;
+  transition: transform .5s var(--ease);
+  will-change: transform;
+}
+.rel-cta::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--gold-light); transform: translateX(-101%);
+  transition: transform .5s var(--ease);
+}
+.rel-cta:hover::before { transform: none; }
+.rel-cta > span { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 12px; }
+.rel-cta svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rel-meta {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: rgba(247,243,237,.4);
+  text-align: right; line-height: 1.8;
+}
+.rel-notes {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--gold-2);
+  border-bottom: 1px solid rgba(155,121,64,.35); padding-bottom: 2px;
+  transition: color .3s, border-color .3s;
+}
+.rel-notes:hover { color: var(--gold-light); border-color: var(--gold-light); }
+.rel-specs {
+  position: relative; z-index: 2;
+  display: flex; flex-wrap: wrap; gap: 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.rel-spec {
+  flex: 1 1 180px; padding: 20px 64px 22px;
+  border-right: 1px solid rgba(255,255,255,.07);
+}
+.rel-spec:last-child { border-right: none; }
+.rel-spec-k {
+  display: block;
+  font-family: var(--mono); font-size: 8px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold-2); margin-bottom: 6px;
+}
+.rel-spec-v { font-size: 13px; font-weight: 300; color: rgba(247,243,237,.62); }
+/* Tighter side padding on the inner spec cells so they align with the
+   band's own 64px gutter rather than doubling it. */
+.rel-spec:not(:first-child) { padding-left: 34px; }
+.rel-spec:not(:last-child) { padding-right: 34px; }
+.rel-spec:first-child { padding-left: 64px; }
+.rel-spec:last-child { padding-right: 64px; }
+
+/* ── Project case grid (problem → approach → result) ──────────── */
+.proj-case {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px; max-width: 640px;
+  margin: 0 0 24px; padding-top: 20px;
+  border-top: 1px solid var(--border-2);
+}
+.pc-l {
+  display: block; margin-bottom: 7px;
+  font-family: var(--mono); font-size: 8px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold);
+}
+.pc-t { font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--stone); }
+
+/* ── Live GitHub strip ────────────────────────────────────────── */
+.gh-strip {
+  display: none; align-items: stretch; flex-wrap: wrap;
+  border: 1px solid var(--border); background: var(--white);
+  margin-bottom: 64px; opacity: 0;
+  transition: opacity .9s var(--ease);
+}
+.gh-strip.on { display: flex; }
+.gh-strip.in { opacity: 1; }
+.gh-item {
+  display: flex; flex-direction: column; gap: 7px; justify-content: center;
+  padding: 22px 30px; flex: 1 1 130px;
+  border-right: 1px solid var(--border-2);
+}
+.gh-item:last-child { border-right: none; }
+.gh-n {
+  font-family: var(--serif); font-size: 30px; font-weight: 200;
+  line-height: 1; letter-spacing: -.03em; color: var(--gold);
+}
+.gh-l {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--stone-2);
+}
+.gh-live {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 22px 28px; margin-left: auto;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--stone-3);
+}
+.gh-live::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: #4ADE80; animation: statusPulse 2.5s ease infinite;
+}
+
+/* ── Native scroll-driven animation ───────────────────────────
+   Replaces JS work where the browser can do it on the compositor.
+   Gated on prefers-reduced-motion so the JS fallback stays in
+   charge when motion is reduced (see the nativeProgress guard). */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    #progress {
+      width: 100%; transition: none;
+      transform: scaleX(0); transform-origin: 0 50%;
+      animation: progGrow linear both;
+      animation-timeline: scroll(root block);
+    }
+    @keyframes progGrow { to { transform: scaleX(1); } }
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Only the photo drifts — with no file present there is nothing
+       to animate, so the band simply sits still. */
+    #release .release-bg img.shot {
+      animation: shotDrift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+    @keyframes shotDrift {
+      from { transform: scale(1.16) translateY(-3.2%); }
+      to   { transform: scale(1.16) translateY(3.2%); }
+    }
+  }
+}
+
 /* ═══ RESPONSIVE ══════════════════════════════════════════════════ */
 @media(max-width:1024px){
   nav { padding: 25px 40px; }
-  #hero, .sw, #featured, #languages { padding-left: 40px; padding-right: 40px; }
+  #hero, .sw, #featured { padding-left: 40px; padding-right: 40px; }
+  .release-inner { padding-left: 40px; padding-right: 40px; }
+  .rel-spec:first-child { padding-left: 40px; }
+  .rel-spec:last-child { padding-right: 40px; }
 }
 
 @media(max-width:960px){
@@ -1246,10 +1496,23 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
   .proj-arr { display:none; }
   .proj-n { font-size:56px; margin-top:0; }
   .skills-layout { grid-template-columns:1fr; gap:44px; }
+  .skills-rail { display:none; }
+  .skills-left { padding-top:0; }
+  .skills-right { grid-template-columns:1fr; gap:38px; }
+  .skill-group:nth-child(even) { margin-top:0; }
+  .skill-group:last-child { margin-top:0; }
+  .cred-grid { grid-template-columns:1fr; gap:44px; }
+  .proj-case { grid-template-columns:1fr; gap:16px; max-width:none; }
+  .release-inner { grid-template-columns:1fr; gap:34px; padding:64px 28px; align-items:start; }
+  .rel-right { align-items:flex-start; }
+  .rel-meta { text-align:left; }
+  .rel-cta { padding:17px 30px; }
+  .rel-spec { flex:1 1 100%; padding:18px 28px !important; border-right:none; border-bottom:1px solid rgba(255,255,255,.07); }
+  .rel-spec:last-child { border-bottom:none; }
+  .gh-item { flex:1 1 45%; padding:18px 22px; }
+  .gh-live { margin-left:0; flex:1 1 100%; border-top:1px solid var(--border-2); padding:14px 22px; }
   .edu-td-yr { width: 120px; }
-  #languages { padding:40px 28px; }
-  .lang-inner { flex-direction:column; gap:28px; padding:32px 28px; }
-  .lang-list { flex-wrap: wrap; justify-content: center; gap: 30px; }
+  .lang-row { margin-top:28px; gap:14px; }
   .cert-item { grid-template-columns:40px 1fr; gap: 20px; }
   .cert-date { display:none; }
   #contact { padding:80px 28px 60px; }
@@ -1469,8 +1732,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
       <span>Cloudflare</span><span class="mdot"></span><span>GitHub Actions</span><span class="mdot"></span>
       <span>Python</span><span class="mdot"></span><span>Java</span><span class="mdot"></span>
       <span>Gemini AI</span><span class="mdot"></span><span>Spring Boot</span><span class="mdot"></span>
-      <span>PostgreSQL</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
-      <span>pgvector</span><span class="mdot"></span><span>Vercel</span>
+      <span>Lucene</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
+      <span>H2</span><span class="mdot"></span><span>Vercel</span>
     </div>
     <div class="mitem">
       <span>React</span><span class="mdot"></span><span>TypeScript</span><span class="mdot"></span>
@@ -1480,8 +1743,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
       <span>Cloudflare</span><span class="mdot"></span><span>GitHub Actions</span><span class="mdot"></span>
       <span>Python</span><span class="mdot"></span><span>Java</span><span class="mdot"></span>
       <span>Gemini AI</span><span class="mdot"></span><span>Spring Boot</span><span class="mdot"></span>
-      <span>PostgreSQL</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
-      <span>pgvector</span><span class="mdot"></span><span>Vercel</span>
+      <span>Lucene</span><span class="mdot"></span><span>Ollama</span><span class="mdot"></span>
+      <span>H2</span><span class="mdot"></span><span>Vercel</span>
     </div>
   </div>
   </div>
@@ -1490,19 +1753,28 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
 
 <!-- Floating project preview (follows cursor over project rows) -->
 <div id="proj-preview" aria-hidden="true">
-  <div class="pp-tile pp-t1" data-pp="1">
+  <!-- Each tile falls back to its gradient until the screenshot exists -->
+  <div class="pp-tile pp-t1" data-pp="1" data-shot-host>
+    <img class="shot" src="assets/preview-driverguard.jpg" alt="" loading="lazy" decoding="async">
+    <span class="pp-scrim"></span>
     <span class="pp-cat">Mobile Safety &bull; Computer Vision</span>
     <span class="pp-name">Driver<i>Guard</i></span>
   </div>
-  <div class="pp-tile pp-t2" data-pp="2">
+  <div class="pp-tile pp-t2" data-pp="2" data-shot-host>
+    <img class="shot" src="assets/preview-collabedit.jpg" alt="" loading="lazy" decoding="async">
+    <span class="pp-scrim"></span>
     <span class="pp-cat">Developer Tools &bull; Real-time</span>
     <span class="pp-name"><i>Collab</i>Edit</span>
   </div>
-  <div class="pp-tile pp-t3" data-pp="3">
+  <div class="pp-tile pp-t3" data-pp="3" data-shot-host>
+    <img class="shot" src="assets/preview-medgemma.jpg" alt="" loading="lazy" decoding="async">
+    <span class="pp-scrim"></span>
     <span class="pp-cat">AI &bull; Healthcare</span>
     <span class="pp-name">Med<i>Gemma</i></span>
   </div>
-  <div class="pp-tile pp-t4" data-pp="4">
+  <div class="pp-tile pp-t4" data-pp="4" data-shot-host>
+    <img class="shot" src="assets/preview-reelcounter.jpg" alt="" loading="lazy" decoding="async">
+    <span class="pp-scrim"></span>
     <span class="pp-cat">Automation &bull; Analytics</span>
     <span class="pp-name">Reel <i>Counter</i></span>
   </div>
@@ -1579,14 +1851,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
         An offline, AI-powered personal knowledge OS for Windows. Scan local folders,
         then search your documents by <em>meaning</em> &mdash; not filename &mdash; through
         natural language. A Spring&nbsp;Boot + Java&nbsp;21 pipeline (scan &rarr; extract &rarr;
-        embed &rarr; vector search) over PostgreSQL/pgvector with local Ollama embeddings,
-        so it runs completely offline &mdash; no cloud, no telemetry.
+        embed &rarr; vector search) over an embedded H2 database and a Lucene index, with
+        local Ollama embeddings. The entire stack ships inside the installer &mdash; no
+        Docker, no database to set up, no cloud, no telemetry.
       </p>
       <div class="feat-tags rv d2">
         <span class="feat-tag">Spring Boot</span>
         <span class="feat-tag">Java 21</span>
-        <span class="feat-tag">PostgreSQL</span>
-        <span class="feat-tag">pgvector</span>
+        <span class="feat-tag">H2 Database</span>
+        <span class="feat-tag">Lucene</span>
         <span class="feat-tag">Ollama</span>
         <span class="feat-tag">React</span>
         <span class="feat-tag">Semantic Search</span>
@@ -1595,12 +1868,64 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
         <span>View on GitHub</span><span class="ci-arr"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
       </a>
     </div>
-    <div class="feat-visual rv d2" aria-hidden="true">
-      <div class="fv-card fv-c1">query &mdash; &ldquo;my rent agreement&rdquo;</div>
-      <div class="fv-card fv-c2">12,480 chunks embedded</div>
-      <div class="fv-card fv-c3">cosine 0.92 &bull; match</div>
-      <div class="fv-line"></div>
-      <div class="fv-circle"></div>
+    <div class="feat-visual rv d2" data-shot-host>
+      <!-- Drop assets/featured-memoria.jpg to replace the mock UI below -->
+      <img class="shot" src="assets/featured-memoria.jpg"
+           alt="Memoria AI desktop interface showing a semantic search result"
+           loading="lazy" decoding="async">
+      <div class="fv-card fv-c1" aria-hidden="true">query &mdash; &ldquo;my rent agreement&rdquo;</div>
+      <div class="fv-card fv-c2" aria-hidden="true">12,480 chunks embedded</div>
+      <div class="fv-card fv-c3" aria-hidden="true">cosine 0.92 &bull; match</div>
+      <div class="fv-line" aria-hidden="true"></div>
+      <div class="fv-circle" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ RELEASE BAND (full-bleed) ══════════════════════ -->
+<section id="release" data-shot-host aria-labelledby="rel-h">
+  <div class="release-bg">
+    <!-- Optional: assets/showcase-memoria.jpg becomes the backdrop -->
+    <img class="shot" src="assets/showcase-memoria.jpg" alt="" loading="lazy" decoding="async">
+  </div>
+  <div class="release-tint" aria-hidden="true"></div>
+
+  <div class="release-inner">
+    <div class="rv">
+      <p class="rel-eyebrow">v0.1.0 &mdash; Now available</p>
+      <h2 id="rel-h" class="rel-h">Memoria runs on<br><i>your</i> machine.</h2>
+      <p class="rel-sub">
+        The Windows desktop build ships with its own Java runtime and a managed
+        local backend &mdash; install it and search your own documents offline.
+      </p>
+    </div>
+    <div class="rel-right rv d1">
+      <a class="rel-cta" href="https://github.com/ayushsalunkhe/Memoria-Ai/releases/download/v0.1.0/Memoria_0.1.0_x64-setup.exe">
+        <span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><polyline points="7 11 12 16 17 11"/><line x1="5" y1="20" x2="19" y2="20"/></svg>
+          Download for Windows
+        </span>
+      </a>
+      <p class="rel-meta">
+        Memoria_0.1.0_x64-setup.exe &bull; 152&nbsp;MB<br>
+        Windows x64 &bull; Released 23 Jul 2026
+      </p>
+      <a class="rel-notes" href="https://github.com/ayushsalunkhe/Memoria-Ai/releases/tag/v0.1.0" target="_blank" rel="noopener">Release notes &nearr;</a>
+    </div>
+  </div>
+
+  <div class="rel-specs rv d2">
+    <div class="rel-spec">
+      <span class="rel-spec-k">No dependencies</span>
+      <span class="rel-spec-v">Bundled Java runtime &mdash; no Docker, PostgreSQL, or system Java required</span>
+    </div>
+    <div class="rel-spec">
+      <span class="rel-spec-k">Local index</span>
+      <span class="rel-spec-v">Embedded H2 for metadata, Lucene for full-text and vector search</span>
+    </div>
+    <div class="rel-spec">
+      <span class="rel-spec-k">Private by default</span>
+      <span class="rel-spec-v">Ollama configured in the background, with an offline fallback path</span>
     </div>
   </div>
 </section>
@@ -1615,6 +1940,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
     <p class="proj-count rv">004 Works</p>
   </div>
 
+  <!-- Live from the GitHub REST API; stays hidden if the call fails -->
+  <div class="gh-strip" id="gh-strip" aria-label="Live GitHub statistics">
+    <div class="gh-item"><span class="gh-n" data-gh="repos">&mdash;</span><span class="gh-l">Repositories</span></div>
+    <div class="gh-item"><span class="gh-n" data-gh="stars">&mdash;</span><span class="gh-l">Stars Earned</span></div>
+    <div class="gh-item"><span class="gh-n" data-gh="followers">&mdash;</span><span class="gh-l">Followers</span></div>
+    <div class="gh-item"><span class="gh-n" data-gh="since">&mdash;</span><span class="gh-l">Shipping Since</span></div>
+    <div class="gh-live">Live from GitHub</div>
+  </div>
+
   <!-- DriverGuard -->
   <div class="project rv js-project" data-cursor="View" data-project="1">
     <div class="proj-n" aria-hidden="true">01</div>
@@ -1627,6 +1961,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
         audio/visual alerts, logs sessions offline in SQLite, and dispatches live GPS
         location to emergency contacts past a configurable threshold.
       </p>
+      <div class="proj-case">
+        <div><span class="pc-l">Problem</span><p class="pc-t">Fatigue detection has to run on-device and offline &mdash; a network round-trip is too slow to matter.</p></div>
+        <div><span class="pc-l">Approach</span><p class="pc-t">Eye Aspect Ratio computed over MediaPipe Face Mesh landmarks, straight from the front camera.</p></div>
+        <div><span class="pc-l">Result</span><p class="pc-t">Real-time alerts, offline session history, and automatic GPS dispatch past a set threshold.</p></div>
+      </div>
       <div class="proj-meta">
         <a href="https://github.com/ayushsalunkhe" target="_blank" rel="noopener" class="proj-live">
           github.com/ayushsalunkhe
@@ -1654,6 +1993,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
         synchronisation. Monaco Editor with syntax highlighting, live execution
         across 10+ languages via Judge0 API.
       </p>
+      <div class="proj-case">
+        <div><span class="pc-l">Problem</span><p class="pc-t">Pair programming usually means screen-sharing an IDE neither person controls.</p></div>
+        <div><span class="pc-l">Approach</span><p class="pc-t">Monaco Editor synced through Firebase Realtime Database, with Judge0 handling execution.</p></div>
+        <div><span class="pc-l">Result</span><p class="pc-t">Live shared editing in 10+ languages, shipped as a one-command Docker image.</p></div>
+      </div>
       <div class="proj-meta">
         <a href="https://collab-edit-v2-dm.vercel.app" target="_blank" rel="noopener" class="proj-live">
           <span class="proj-live-dot" aria-hidden="true"></span>
@@ -1681,6 +2025,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
         Production AI medicine identification web app using React and Google
         MedGemma API. Identify medicines from photos and surface drug info via OpenFDA integration.
       </p>
+      <div class="proj-case">
+        <div><span class="pc-l">Problem</span><p class="pc-t">An unlabelled pill at home is a genuine safety question with no easy answer.</p></div>
+        <div><span class="pc-l">Approach</span><p class="pc-t">Google MedGemma vision inference for identification, OpenFDA for authoritative label data.</p></div>
+        <div><span class="pc-l">Result</span><p class="pc-t">Photo to identification, side effects, and alternatives &mdash; in a single pass.</p></div>
+      </div>
       <div class="proj-meta">
         <a href="https://medgemma-pill-identification.vercel.app" target="_blank" rel="noopener" class="proj-live">
           <span class="proj-live-dot" aria-hidden="true"></span>
@@ -1708,6 +2057,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
         on a scheduled GitHub Actions cron (9:00&nbsp;AM IST), tracking views, likes, and
         daily growth deltas to Google Sheets with exponential-backoff retry logic.
       </p>
+      <div class="proj-case">
+        <div><span class="pc-l">Problem</span><p class="pc-t">Tracking Reel performance by hand stops scaling the moment you add accounts.</p></div>
+        <div><span class="pc-l">Approach</span><p class="pc-t">Apify scraping on a GitHub Actions cron, with exponential-backoff retries around every call.</p></div>
+        <div><span class="pc-l">Result</span><p class="pc-t">Daily growth deltas land in Google Sheets with zero manual upkeep.</p></div>
+      </div>
       <div class="proj-meta">
         <a href="https://github.com/ayushsalunkhe" target="_blank" rel="noopener" class="proj-live">
           github.com/ayushsalunkhe
@@ -1731,7 +2085,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
     <span class="stag-bar"></span>03 &mdash; Expertise
   </div>
   <div class="skills-layout">
-    <div>
+    <div class="skills-rail" aria-hidden="true">Built With</div>
+    <div class="skills-left">
       <h2 id="skills-h" class="hd skills-left-h rv">Tools &amp;<br><i>Stack</i></h2>
       <p class="skills-left-p rv d1">
         A curated set of languages, frameworks, and platforms for building modern,
@@ -1780,8 +2135,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
       <div class="skill-group rv d3">
         <div class="sg-label"><span></span>Databases &amp; APIs</div>
         <div class="skill-pills">
-          <div class="sk"><span>PostgreSQL</span></div>
-          <div class="sk"><span>pgvector</span></div>
+          <div class="sk"><span>H2 Database</span></div>
+          <div class="sk"><span>Lucene</span></div>
           <div class="sk"><span>SQLite</span></div>
           <div class="sk"><span>MySQL</span></div>
           <div class="sk"><span>Ollama</span></div>
@@ -1846,10 +2201,66 @@ html { scrollbar-width: thin; scrollbar-color: var(--stone-3) var(--cream-2); }
   </div>
 </section>
 
+<!-- ══════════════════ CREDENTIALS ═══════════════════════════════ -->
+<section id="credentials" class="sw" aria-labelledby="cred-h">
+  <div class="stag rv">
+    <span class="stag-bar"></span>05 &mdash; Credentials
+  </div>
+  <div class="cred-grid">
+    <div>
+      <h2 id="cred-h" class="hd cred-h rv">Certifi<i>cations</i></h2>
+      <p class="cred-p rv d1">
+        Industry job simulations and coursework backing up what the projects demonstrate.
+      </p>
+    </div>
+    <div>
+      <div class="cert-list">
+        <div class="cert-item rv">
+          <span class="cert-num">01</span>
+          <span>
+            <span class="cert-name">Technology Job Simulation</span>
+            <span class="cert-org">Deloitte Australia &bull; Forage</span>
+          </span>
+          <span class="cert-date">Dec 2025</span>
+        </div>
+        <div class="cert-item rv d1">
+          <span class="cert-num">02</span>
+          <span>
+            <span class="cert-name">Solutions Architecture Virtual Experience</span>
+            <span class="cert-org">AWS APAC &bull; Forage</span>
+          </span>
+          <span class="cert-date">Dec 2025</span>
+        </div>
+        <!-- TODO: add platform + date once confirmed (see resume placeholders) -->
+        <div class="cert-item rv d2">
+          <span class="cert-num">03</span>
+          <span>
+            <span class="cert-name">Java Programming</span>
+            <span class="cert-org">Course Certificate</span>
+          </span>
+          <span class="cert-date"></span>
+        </div>
+        <div class="cert-item rv d2">
+          <span class="cert-num">04</span>
+          <span>
+            <span class="cert-name">Linux Command-Line &amp; Shell Scripting</span>
+            <span class="cert-org">Course Certificate</span>
+          </span>
+          <span class="cert-date"></span>
+        </div>
+      </div>
+      <div class="lang-row rv d3">
+        <span class="lang-label">Languages</span>
+        <span class="lang-names">English<span>&middot;</span>Marathi<span>&middot;</span>Hindi</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══════════════════ CONTACT ════════════════════════════════════ -->
 <section id="contact" aria-labelledby="contact-h">
   <div class="ct-amb" aria-hidden="true"></div>
-  <p class="ct-stag rv">05 &mdash; Let&rsquo;s Connect</p>
+  <p class="ct-stag rv">06 &mdash; Let&rsquo;s Connect</p>
   <h2 id="contact-h" class="ct-h rv d1">
     <span class="w">Got</span> <span class="w">a</span><br><span class="w">project</span><br><span class="w">in</span> <span class="w"><i>mind?</i></span>
   </h2>
@@ -1983,11 +2394,20 @@ document.querySelectorAll('a, button, .ct-cta, .feat-link, .nav-cta').forEach(el
   window.addEventListener('load', () => setTimeout(finish, 900));
 })();
 
-/* ── SCROLL PROGRESS ────────────────────────────────────────── */
-window.addEventListener('scroll',()=>{
-  const d=document.documentElement;
-  document.getElementById('progress').style.width=(d.scrollTop/(d.scrollHeight-d.clientHeight)*100)+'%';
-},{passive:true});
+/* ── SCROLL PROGRESS ──────────────────────────────────────────
+   Skipped entirely when the browser can drive the bar natively via
+   animation-timeline: scroll() — see the SUBSTANCE LAYER @supports
+   block. The CSS is gated on prefers-reduced-motion, so this guard
+   must be too, or the bar would freeze for reduced-motion users. */
+const nativeProgress =
+  window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()') &&
+  !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!nativeProgress) {
+  window.addEventListener('scroll',()=>{
+    const d=document.documentElement;
+    document.getElementById('progress').style.width=(d.scrollTop/(d.scrollHeight-d.clientHeight)*100)+'%';
+  },{passive:true});
+}
 
 /* ── NAV SCROLL STATE ───────────────────────────────────────── */
 const navEl=document.getElementById('nav');
@@ -2056,7 +2476,7 @@ const FINE   = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 /* ── 1 · MAGNETIC HOVER ─────────────────────────────────────── */
 if (FINE && !REDUCE) {
-  document.querySelectorAll('.nav-cta, .ct-cta, .feat-link, .proj-arr, .nav-toggle')
+  document.querySelectorAll('.nav-cta, .ct-cta, .feat-link, .rel-cta, .proj-arr, .nav-toggle')
     .forEach(el => {
       el.classList.add('magnetic');
       const strength = el.classList.contains('proj-arr') ? 0.5 : 0.35;
@@ -2131,29 +2551,49 @@ if (FINE && !REDUCE) {
     raf = (active || Math.abs(tx - px) > 0.5) ? requestAnimationFrame(loop) : null;
   }
 
+  /* Point the preview at a given row. `overLink` hides the tile over
+     links/tags — the cursor is the affordance there, and a floating
+     image over a URL reads as confusion. */
+  function show(proj, x, y, overLink){
+    const id = proj.dataset.project;
+    tiles.forEach(t => t.classList.toggle('on', t.dataset.pp === id));
+    tx = x; ty = y;
+    if (!active) { px = tx; py = ty; }   // snap on first entry, no fly-in
+    active = true;
+    pv.classList.toggle('on', !overLink);
+    document.body.classList.toggle('c-project', !overLink);
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+  function hide(){
+    active = false;
+    pv.classList.remove('on');
+    document.body.classList.remove('c-project');
+  }
+
   document.querySelectorAll('.js-project').forEach(proj => {
-    proj.addEventListener('mouseenter', e => {
-      const id = proj.dataset.project;
-      tiles.forEach(t => t.classList.toggle('on', t.dataset.pp === id));
-      tx = e.clientX; ty = e.clientY;
-      if (!active) { px = tx; py = ty; }   // snap on first entry, no fly-in
-      active = true;
-      pv.classList.add('on');
-      if (!raf) raf = requestAnimationFrame(loop);
-    });
-    proj.addEventListener('mousemove', e => {
-      tx = e.clientX; ty = e.clientY;
-      /* Hide the tile over links/tags — the cursor is the affordance
-         there, and a floating image over a URL reads as confusion. */
-      const overLink = e.target.closest('a, .proj-tags');
-      pv.classList.toggle('on', active && !overLink);
-      document.body.classList.toggle('c-project', !overLink);
-    });
-    proj.addEventListener('mouseleave', () => {
-      active = false;
-      pv.classList.remove('on');
-    });
+    proj.addEventListener('mouseenter', e => show(proj, e.clientX, e.clientY, false));
+    proj.addEventListener('mousemove',  e =>
+      show(proj, e.clientX, e.clientY, !!e.target.closest('a, .proj-tags')));
+    proj.addEventListener('mouseleave', hide);
   });
+
+  /* Scrolling moves rows under a stationary cursor, and no pointer
+     event fires — so without this the preview keeps showing the row
+     the mouse *entered*, not the one it is now over. Re-resolve what
+     is under the cursor on every scroll. (#proj-preview and #cur are
+     pointer-events:none, so they never win the hit test.) */
+  let lx = 0, ly = 0, seen = false;
+  window.addEventListener('mousemove', e => {
+    lx = e.clientX; ly = e.clientY; seen = true;
+  }, { passive: true });
+
+  window.addEventListener('scroll', () => {
+    if (!seen) return;
+    const el = document.elementFromPoint(lx, ly);
+    const proj = el && el.closest ? el.closest('.js-project') : null;
+    if (proj) show(proj, lx, ly, !!el.closest('a, .proj-tags'));
+    else if (active) hide();
+  }, { passive: true });
 })();
 
 /* ── 5 · HEADING MASK-REVEAL ────────────────────────────────── */
@@ -2362,12 +2802,13 @@ function scramble(el){
 /* ── CTA SHEEN (one-shot) ───────────────────────────────────── */
 (function ctaSheen(){
   if (REDUCE) return;
-  document.querySelectorAll('.nav-cta, .feat-link, .ct-cta')
+  document.querySelectorAll('.nav-cta, .feat-link, .rel-cta, .ct-cta')
     .forEach(el => el.classList.add('sheen-el'));
   const nav = document.querySelector('.nav-cta');
   if (nav) setTimeout(() => nav.classList.add('shine'), 2400);
   /* Scroll-triggered CTAs shine once, shortly after they enter view */
-  [document.querySelector('.feat-link'), document.querySelector('.ct-cta')]
+  [document.querySelector('.feat-link'), document.querySelector('.rel-cta'),
+   document.querySelector('.ct-cta')]
     .filter(Boolean)
     .forEach(el => {
       const io = new IntersectionObserver(entries => entries.forEach(e => {
@@ -2406,6 +2847,69 @@ function scramble(el){
   const h = new Date().getHours();
   const g = h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   bar.after(g + ' — ');
+})();
+
+/* ── IMAGE SLOTS ──────────────────────────────────────────────
+   A .shot only fades in once it has genuinely decoded; until then
+   (or forever, if the file is missing) the designed placeholder
+   underneath stays visible. Handles cached and 404'd images too —
+   both may settle before this listener attaches, hence the
+   img.complete check. */
+(function shots(){
+  const mark = img => {
+    const host = img.closest('[data-shot-host]');
+    if (host) host.classList.toggle('has-shot', img.complete && img.naturalWidth > 0);
+  };
+  document.querySelectorAll('img.shot').forEach(img => {
+    img.addEventListener('load',  () => mark(img));
+    img.addEventListener('error', () => mark(img));
+    if (img.complete) mark(img);
+  });
+})();
+
+/* ── LIVE GITHUB STATS ────────────────────────────────────────
+   Unauthenticated REST (60 req/hr per IP). The strip is hidden by
+   default and only revealed once real numbers arrive, so a rate
+   limit or offline visit degrades to nothing rather than to dashes. */
+(function githubStats(){
+  const strip = document.getElementById('gh-strip');
+  if (!strip) return;
+  const USER = 'ayushsalunkhe';
+  const cell = k => strip.querySelector('[data-gh="' + k + '"]');
+  const countTo = (el, target) => {
+    if (!el) return;
+    if (REDUCE) { el.textContent = target; return; }
+    const t0 = performance.now(), dur = 1200;
+    (function tick(now){
+      const p = Math.min((now - t0) / dur, 1);
+      el.textContent = Math.round((1 - Math.pow(1 - p, 4)) * target);
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = target;
+    })(t0);
+  };
+  const json = url => fetch(url).then(r => r.ok ? r.json() : Promise.reject(r.status));
+
+  Promise.allSettled([
+    json('https://api.github.com/users/' + USER),
+    json('https://api.github.com/users/' + USER + '/repos?per_page=100&sort=updated')
+  ]).then(([user, repos]) => {
+    if (user.status !== 'fulfilled') return;      // no data → stay hidden
+    const u = user.value;
+    countTo(cell('repos'), u.public_repos);
+    countTo(cell('followers'), u.followers);
+    const since = cell('since');
+    if (since) since.textContent = new Date(u.created_at).getFullYear();
+
+    if (repos.status === 'fulfilled' && Array.isArray(repos.value)) {
+      countTo(cell('stars'), repos.value.reduce((n, r) => n + (r.stargazers_count || 0), 0));
+    } else {
+      const item = cell('stars') && cell('stars').closest('.gh-item');
+      if (item) item.remove();                    // drop the cell, don't show a dash
+    }
+
+    strip.classList.add('on');
+    requestAnimationFrame(() => strip.classList.add('in'));
+  });
 })();
 
 /* ── CONSOLE SIGNATURE ──────────────────────────────────────── */
